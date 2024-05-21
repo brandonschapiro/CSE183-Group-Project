@@ -47,39 +47,39 @@ db.define_table('sightings',
     Field('longitude', 'double')
 )
 
-# Load species data
-if db(db.species).isempty():
-    with open('/mnt/data/species.csv', 'r') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            db.species.insert(species_id=row[0], name=row[1])
+# # Load species data
+# if db(db.species).isempty():
+#     with open('/mnt/data/species.csv', 'r') as f:
+#         reader = csv.reader(f)
+#         for row in reader:
+#             db.species.insert(species_id=row[0], name=row[1])
 
-# Load checklists data
-if db(db.checklists).isempty():
-    with open('/mnt/data/checklists.csv', 'r') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            db.checklists.insert(
-                sampling_event_identifier=row[0],
-                user_id=row[1],
-                location=row[2],
-                date=row[3],
-                latitude=row[4],
-                longitude=row[5]
-            )
+# # Load checklists data
+# if db(db.checklists).isempty():
+#     with open('/mnt/data/checklists.csv', 'r') as f:
+#         reader = csv.reader(f)
+#         for row in reader:
+#             db.checklists.insert(
+#                 sampling_event_identifier=row[0],
+#                 user_id=row[1],
+#                 location=row[2],
+#                 date=row[3],
+#                 latitude=row[4],
+#                 longitude=row[5]
+#             )
 
-# Load sightings data
-if db(db.sightings).isempty():
-    with open('/mnt/data/sightings.csv', 'r') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            db.sightings.insert(
-                sighting_id=row[0],
-                checklist_id=row[1],
-                species_id=row[2],
-                count=row[3],
-                latitude=row[4],
-                longitude=row[5]
-            )
+# # Load sightings data
+# if db(db.sightings).isempty():
+#     with open('/mnt/data/sightings.csv', 'r') as f:
+#         reader = csv.reader(f)
+#         for row in reader:
+#             db.sightings.insert(
+#                 sighting_id=row[0],
+#                 checklist_id=row[1],
+#                 species_id=row[2],
+#                 count=row[3],
+#                 latitude=row[4],
+#                 longitude=row[5]
+#             )
 
 db.commit()
