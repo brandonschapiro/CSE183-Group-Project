@@ -41,6 +41,30 @@ def index():
         my_callback_url = URL('my_callback', signer=url_signer),
     )
 
+@action('checklist')
+@action.uses('checklist.html', db, auth, url_signer)
+def index():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
+
+@action('statistics')
+@action.uses('statistics.html', db, auth, url_signer)
+def index():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
+
+@action('location')
+@action.uses('location.html', db, auth, url_signer)
+def index():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
+
 @action('my_callback')
 @action.uses() # Add here things like db, auth, etc.
 def my_callback():
