@@ -10,8 +10,8 @@
 <div class="section" id="app" v-cloak>
   <!-- Put here your Vue.js template -->
   <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
-  <p>Content: my_value: {{my_value}} </p>
-  <p>Location page</p>
+  <p>Num checklists: {{checklists.length}} </p>
+  <p>Num sightings: {{sightings.length}}</p>
 </div>
 
 
@@ -19,6 +19,7 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_region_information_url = "[[=XML(get_region_information_url)]]";
 </script>
 <script src="js/location.js"></script>
 [[end]]
