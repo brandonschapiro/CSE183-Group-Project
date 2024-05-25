@@ -13,6 +13,7 @@ app.data = {
             checklists: [],
             sightings: [],
             unique_sightings: [],
+            selectedSpecies: '',
         };
     },
     methods: {
@@ -21,6 +22,9 @@ app.data = {
             // This is an example.
             this.my_value += 1;
         },
+        setSpecies: function(){
+            console.log('new species selected')
+        }
         
     }
 };
