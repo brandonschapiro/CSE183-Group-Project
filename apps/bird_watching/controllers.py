@@ -31,6 +31,7 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 from collections import defaultdict
+import json
 
 url_signer = URLSigner(session)
 
@@ -99,6 +100,8 @@ def get_region_information():
     unique_sighting_ids = set()
     unique_sightings = []
     sightings_dict = defaultdict(list)
+    #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 time contributing (maybe later)
+    top_contributors = defaultdict(list)
     all_sightings = db(db.sighting).select(left=db.species.on(db.sighting.species_id == db.species.id))
     for sight in all_sightings:
         sightings_dict[sight.sighting.checklist_id].append(sight)
@@ -115,6 +118,10 @@ def get_region_information():
             "observation_duration":checklist.observation_duration,
             "sightings": []
         }
+        if not top_contributors[checklist.user_email]:
+            top_contributors[checklist.user_email] = [1, 0, 0]
+        else:
+            top_contributors[checklist.user_email][0] += 1
         for sighting in sightings:
             sighting_data = {
                 "sighting_id":sighting.sighting.id,
@@ -122,6 +129,8 @@ def get_region_information():
                 "species_name":sighting.species.name,
                 "species_count":sighting.sighting.species_count,
             }
+            top_contributors[checklist.user_email][1] += 1
+            top_contributors[checklist.user_email][2] += sighting.sighting.species_count
             sightings_list.append(sighting_data)
             if(sighting.species.id not in unique_sighting_ids):
                 unique_sighting_ids.add(sighting.species.id)
@@ -129,7 +138,16 @@ def get_region_information():
             checklist_data['sightings'].append(sighting_data)
         checklists_with_sightings.append(checklist_data)
     unique_sightings_sorted = sorted(unique_sightings, key=lambda x: x['id'])
-    return dict(checklists = checklists_with_sightings, sightings = sightings_list, unique_sightings = unique_sightings_sorted)
+    sorted_top_contributors = dict(sorted(top_contributors.items(), key=lambda x:[1][0], reverse=True))
+    top_contribs = []
+    for key in sorted_top_contributors:
+        top_contribs.append([key] + sorted_top_contributors.get(key))
+    top_contribs = sorted(top_contribs, key=lambda x:x[1], reverse=True)
+    if(len(top_contribs) > 10):
+        top_contribs = top_contribs[0:9]
+    #top_contribs = json.dumps([[key] + value for key, value in top_contributors.items()])
+    #top_contribs = sorted(top_contribs, key=lambda x:[1], reverse=True)
+    return dict(checklists = checklists_with_sightings, sightings = sightings_list, unique_sightings = unique_sightings_sorted, top_contributors = top_contribs)
     
 
 @action('my_callback')

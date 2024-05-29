@@ -13,6 +13,7 @@ app.data = {
             checklists: [],
             sightings: [],
             unique_sightings: [],
+            top_contributors: [],
             selectedSpecies: '',
         };
     },
@@ -37,6 +38,7 @@ app.load_data = function () {
         app.vue.checklists = r.data.checklists
         app.vue.sightings = r.data.sightings
         app.vue.unique_sightings = r.data.unique_sightings
+        app.vue.top_contributors = r.data.top_contributors
     })
 }
 
