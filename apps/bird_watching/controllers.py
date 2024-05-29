@@ -53,11 +53,38 @@ def index():
 
 @action('statistics')
 @action.uses('statistics.html', db, auth, url_signer)
-def index():
+def statistics():
+    user_email = "sample0@gmail.com"
+    print("User Email:", user_email)
+
+    if user_email:
+        # Query sightings associated with the current user
+        query = (db.checklist.user_email == user_email) & \
+                (db.checklist.id == db.sighting.checklist_id)
+        print("Query:", query)
+
+        # Join with the species table to get species names
+        species_list = db(query).select(
+            db.species.name,
+            distinct=True
+        )
+
+        # Extract species names from the query result
+        species_names = [row.name for row in species_list]
+        print("Species Names:", species_names)
+    else:
+        print("User is not logged in.")
+
     return dict(
-        # COMPLETE: return here any signed URLs you need.
-        my_callback_url = URL('my_callback', signer=url_signer),
+        speciesList=species_names if user_email else [],
+        my_callback_url=URL('my_callback', signer=url_signer),
+        # Include other statistics data in the dictionary
     )
+
+
+
+
+
 
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
