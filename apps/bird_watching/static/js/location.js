@@ -32,11 +32,12 @@ app.data = {
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
-    axios.get(get_region_information_url).then(function (r) {
-        app.vue.checklists = r.data.checklists;
-        app.vue.sightings = r.data.sightings;
+    //this.checklists = this.checklistsData
+    axios.get(get_region_information_url, {params: {lat1:lat1,lat2:lat2,long1:long1,long2:long2}}).then(function(r) {
+        app.vue.checklists = r.data.checklists
+        app.vue.sightings = r.data.sightings
         app.vue.unique_sightings = r.data.unique_sightings
-    });
+    })
 }
 
 app.load_data();

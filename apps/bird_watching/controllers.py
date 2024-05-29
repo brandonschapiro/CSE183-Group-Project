@@ -30,6 +30,7 @@ from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
+from collections import defaultdict
 
 url_signer = URLSigner(session)
 
@@ -59,28 +60,51 @@ def index():
 
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
-def index():
+def location():
+    lat1 = 37
+    lat2 = 36.99
+    long1 = -122.05
+    long2 = -122.08
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_region_information_url = URL('get_region_information')
+        get_region_information_url = URL('get_region_information'),
+        lat1 = lat1,
+        lat2= lat2,
+        long1 = long1,
+        long2 = long2
     )
 
 
-#Gets species information for location page, not fully implemented yet, will still need to add latitude and longitude coordinates to search query
-#but for now will populate just based on sample data. Returns list of unique species, as well as a list of checklists, each one containing a list of sightings
+#Gets species information for location page, somewhat slow, takes 14 seconds for loading roughly 2k checklists and 30k sightings right now
 @action('get_region_information', method='GET')
 @action.uses(db, auth.user)
 def get_region_information():
-
-    checklists = db(db.checklist).select(orderby=db.checklist.id, limitby=(0, 100))
+    lat1 = request.query.get('lat1')
+    lat2 = request.query.get('lat2')
+    long1 = request.query.get('long1')
+    long2 = request.query.get('long2')
+    checklists = []
+    if(lat1 and lat2 and long1 and long2):
+        minLat = min(lat1, lat2)
+        maxLat = max(lat1, lat2)
+        minLong = min(long1, long2)
+        maxLong = min(long1, long2)
+        checklists = db(db.checklist.latitude.cast('float') >= minLat and db.checklist.latitude.cast('float') <= maxLat and db.checklist.longitude.cast('float') >= minLong and db.checklist.longitude.cast('float') <= maxLong).select()
+    if(not checklists):
+        checklists = db(db.checklist).select(orderby=db.checklist.id, limitby=(0, 100))
 
     checklists_with_sightings = []
     sightings_list = []
     unique_sighting_ids = set()
     unique_sightings = []
+    sightings_dict = defaultdict(list)
+    all_sightings = db(db.sighting).select(left=db.species.on(db.sighting.species_id == db.species.id))
+    for sight in all_sightings:
+        sightings_dict[sight.sighting.checklist_id].append(sight)
+
     for checklist in checklists:
-        sightings = db(db.sighting.checklist_id == checklist.id).select(left=db.species.on(db.sighting.species_id == db.species.id))
+        sightings = sightings_dict[checklist.id]
         checklist_data = {
             "id":checklist.id,
             "user_email":checklist.user_email,
