@@ -100,7 +100,7 @@ def get_region_information():
     unique_sighting_ids = set()
     unique_sightings = []
     sightings_dict = defaultdict(list)
-    #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 time contributing (maybe later)
+    #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 time contributing (maybe later) - possibly add a time sighting in region statistic or like a first checklist in region date
     top_contributors = defaultdict(list)
     all_sightings = db(db.sighting).select(left=db.species.on(db.sighting.species_id == db.species.id))
     for sight in all_sightings:
