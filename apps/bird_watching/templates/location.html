@@ -3,17 +3,65 @@
 <style>
 [v-cloak] {
      display: none;
+     
+}
+.section {
+  display: flex;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.column-name {
+  font-weight: bold;
+}
+
+.grid-row {
+  display: contents;
+}
+
+.grid-item {
+  padding: 10px;
+  background-color: #f1f1f1;
+}
+
+
+.left-section {
+  flex: 2;
+  padding-right: 20px;
+}
+
+.column-names {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  font-weight: bold;
+}
+
+.grid-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.right-section {
+  flex: 1;
 }
 </style>
 
 
 <div class="section" id="app" v-cloak>
   <!-- Put here your Vue.js template -->
-  <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
-  <p>Num checklists: {{checklists.length}} </p>
-  <p>Num sightings: {{sightings.length}}</p>
 
-  <div>
+
+
+  <div class='left-section'>
+    <h1 class="title"><i class="fa-solid fa-cube"></i>Region Information</h1>
+    <p>Num checklists: {{checklists.length}} </p>
+    <p>Num sightings: {{sightings.length}}</p>
     <h3>Species in Region</h3>
     <select v-model="selectedSpecies" @change="setSpecies">
         <option v-for="sighting in unique_sightings" :key="sighting.id" :value="sighting">
@@ -22,6 +70,21 @@
     </select>
     <h3>Selected Species:</h3>
     <p>{{selectedSpecies}}</p>
+  </div>
+  <div class='right-section'>
+    <h3 class="title">Top Contributors</h3>
+    <div class="grid-container">
+      <div class="column-name">Email</div>
+      <div class="column-name">Checklists</div>
+      <div class="column-name">Sightings</div>
+      <div class="column-name">Birds Seen</div>
+      <div v-for='contributor in top_contributors' :key='contributor[0]' class="grid-row">
+        <div class="grid-item">{{contributor[0]}}</div>
+        <div class="grid-item">{{contributor[1]}}</div>
+        <div class="grid-item">{{contributor[2]}}</div>
+        <div class="grid-item">{{contributor[3]}}</div>
+      </div>
+    </div>
   </div>
 </div>
 
