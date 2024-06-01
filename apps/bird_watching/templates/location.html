@@ -66,12 +66,10 @@
           {{ sighting.name }}
         </option>
     </select>
-    <h3>Selected Species:</h3>
-    <p>{{selectedSpecies}}</p>
-    <div id='chart-container'></div>
+    <div><canvas id='chart'></div>
   </div>
   <div class='right-section'>
-    <h3 class="title">Top Contributors</h3>
+    <h3 class="title">Top Contributors of Region</h3>
     <div class="grid-container">
       <div class="column-name">Email</div>
       <div class="column-name">Checklists</div>
@@ -104,29 +102,10 @@
   <canvas id="myChart"></canvas>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-  const ctx = document.getElementById('myChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-      datasets: [{
-        label: '# of Votes',
-        data: [12, 19, 3, 5, 2, 3],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-</script>
+
 <script src="js/location.js"></script>
 
 [[end]]

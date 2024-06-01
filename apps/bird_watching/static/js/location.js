@@ -19,7 +19,11 @@ app.data = {
             monthCounts: [],
             chartData: [],
             svg: null,
+            chart: null,
         };
+    },
+    computed:{
+        
     },
     methods: {
         // Complete as you see fit.
@@ -27,21 +31,6 @@ app.data = {
             // This is an example.
             this.my_value += 1;
         },
-        update_chart: function(newData){
-            xScale.domain(d3.extent(newData, d => new Date(d.date)));
-            yScale.domain([0, d3.max(newData, d => d.value)]);
-        
-            // Update the line path
-            svg.selectAll('.line')
-              .datum(newData)
-              .attr('d', line);
-        
-            // Update the axes
-            svg.selectAll('.x-axis')
-              .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%Y-%m-%d')));
-            svg.selectAll('.y-axis')
-              .call(d3.axisLeft(yScale));
-          },
         setSpecies: function(){
             console.log('running')
             let dict = {}
@@ -78,51 +67,47 @@ app.data = {
               for(let i = 0; i < this.monthLabels.length; i++){
                 this.monthCounts.push(dict[this.monthLabels[i]])
               }
-            this.chartData = []
+            let chartData = []
             for(let i = 0; i < this.monthCounts.length; i++){
-                this.chartData.push({'date':this.monthLabels[i],'count':this.monthCounts[i]})
+                chartData.push({'date':this.monthLabels[i],'count':this.monthCounts[i]})
             }
-            //this.createChart(this.chartData)
+            this.chartData = chartData
+            this.updateChart(chartData)
             console.log('done')
         },
-        createChart: function(data) {
-            const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-            const width = 600 - margin.left - margin.right;
-            const height = 400 - margin.top - margin.bottom;
-          
-            this.svg = d3.select('#chart-container')
-              .append('svg')
-              .attr('width', width + margin.left + margin.right)
-              .attr('height', height + margin.top + margin.bottom)
-              .append('g')
-              .attr('transform', `translate(${margin.left}, ${margin.top})`);
-          
-            const xScale = d3.scaleLinear()
-              .domain(d3.extent(data, d => new Date(d.date)))
-              .range([0, width]);
-          
-            const yScale = d3.scaleLinear()
-              .domain([0, d3.max(data, d => d.count)])
-              .range([height, 0]);
-          
-            const line = d3.line()
-              .x(d => xScale(new Date(d.date)))
-              .y(d => yScale(d.y));
-          
-              this.svg.append('path')
-              .datum(data)
-              .attr('fill', 'none')
-              .attr('stroke', 'steelblue')
-              .attr('stroke-width', 2)
-              .attr('d', line);
-          
-              this.svg.append('g')
-              .attr('transform', `translate(0, ${height})`)
-              .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%Y-%m-%d')));
-          
-              this.svg.append('g')
-              .call(d3.axisLeft(yScale));
-          }
+        updateChart: function(chartData){
+            console.log('updating chart')
+            let chartLabels = []
+            let data = []
+            let label = this.selectedSpecies.name + ' seen'
+            for(let i = 0; i < chartData.length; i++){
+              chartLabels.push(chartData[i]['date'])
+              data.push(chartData[i]['count'])
+            }
+            this.svg = document.getElementById('chart');
+            if(this.chart){
+              this.chart.destroy()
+            }
+            this.chart = new Chart(this.svg, {
+              type: 'bar',
+              data: {
+                labels: chartLabels,
+                datasets: [{
+                  label: label,
+                  data: data,
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }
+            });
+      },
+        
 }
 };
 
@@ -136,6 +121,7 @@ app.load_data = function () {
         app.vue.unique_sightings = r.data.unique_sightings
         app.vue.top_contributors = r.data.top_contributors
     })
+
 }
 
 app.load_data();

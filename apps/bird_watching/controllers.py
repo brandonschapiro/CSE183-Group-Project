@@ -155,7 +155,7 @@ def get_region_information():
                 "species_id":sighting.species.id,
                 "species_name":sighting.species.name,
                 "species_count":sighting.sighting.species_count,
-                "date":checklist.observation_date
+                "date":checklist.observation_date,
             }
             top_contributors[checklist.user_email][1] += 1
             top_contributors[checklist.user_email][2] += sighting.sighting.species_count
