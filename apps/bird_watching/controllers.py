@@ -55,31 +55,28 @@ def index():
 @action.uses('statistics.html', db, auth, url_signer)
 def statistics():
     user_email = "sample0@gmail.com"
-    print("User Email:", user_email)
-
-    if user_email:
-        # Query sightings associated with the current user
-        query = (db.checklist.user_email == user_email) & \
-                (db.checklist.id == db.sighting.checklist_id)
-        print("Query:", query)
-
-        # Join with the species table to get species names
-        species_list = db(query).select(
-            db.species.name,
-            distinct=True
-        )
-
-        # Extract species names from the query result
-        species_names = [row.name for row in species_list]
-        print("Species Names:", species_names)
-    else:
-        print("User is not logged in.")
-
+    
+    # Query sightings associated with the current user email
+    query = (db.checklist.user_email == user_email)
+    
+    # Join checklist with sighting and species tables
+    unique_species_ids = db(query).select(db.species.id,
+                                          distinct=True,
+                                          join=[
+                                              db.sighting.on(db.sighting.checklist_id == db.checklist.id),
+                                              db.species.on(db.sighting.species_id == db.species.id)
+                                          ])
+    
+    # Count unique species IDs
+    unique_species_count = len(unique_species_ids)
+    
+    print("Unique Species Count:", unique_species_count)  # This should match the SQL result
+    
     return dict(
-        speciesList=species_names if user_email else [],
-        my_callback_url=URL('my_callback', signer=url_signer),
-        # Include other statistics data in the dictionary
+        unique_species_count=unique_species_count,
+        my_callback_url=URL('my_callback', signer=url_signer)
     )
+
 
 
 
