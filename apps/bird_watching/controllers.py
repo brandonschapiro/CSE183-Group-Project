@@ -31,6 +31,7 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 from collections import defaultdict
+from datetime import date
 from py4web.utils.grid import Grid
 import json
 
@@ -78,19 +79,28 @@ def get_user_statistics():
             db.species.on(db.sighting.species_id == db.species.id)
         ]
     )
-
+    
     species_names = []
     observation_dates = []
-    
+    sightings_count = {}
+
     for row in unique_species_data:
         species_names.append(row.species.name)
-        observation_dates.append(row.checklist.observation_date)
+        observation_date = row.checklist.observation_date
+        observation_dates.append(observation_date)
+        # Convert date to string for JSON serialization
+        date_str = observation_date.isoformat()
+        if date_str in sightings_count:
+            sightings_count[date_str] += 1
+        else:
+            sightings_count[date_str] = 1
 
+    print(sightings_count)
     return dict(
         species_names=species_names,
         observation_dates=observation_dates,
+        sightings_count=sightings_count,
     )
-
 
 
 
