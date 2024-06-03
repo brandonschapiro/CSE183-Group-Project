@@ -31,6 +31,7 @@ from .common import db, session, T, cache, auth, logger, authenticated, unauthen
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email
 from collections import defaultdict
+from py4web.utils.grid import Grid
 import json
 
 url_signer = URLSigner(session)
@@ -51,31 +52,38 @@ def index():
         my_callback_url = URL('my_callback', signer=url_signer),
     )
 
+
 @action('statistics')
 @action.uses('statistics.html', db, auth, url_signer)
 def statistics():
     user_email = "sample0@gmail.com"
-    
-    # Query sightings associated with the current user email
     query = (db.checklist.user_email == user_email)
-    
-    # Join checklist with sighting and species tables
-    unique_species_ids = db(query).select(db.species.id,
-                                          distinct=True,
-                                          join=[
-                                              db.sighting.on(db.sighting.checklist_id == db.checklist.id),
-                                              db.species.on(db.sighting.species_id == db.species.id)
-                                          ])
+    unique_species_ids = db(query).select(
+        db.species.id,
+        distinct=True,
+        join=[
+            db.sighting.on(db.sighting.checklist_id == db.checklist.id),
+            db.species.on(db.sighting.species_id == db.species.id)
+        ]
+    )
     
     # Count unique species IDs
     unique_species_count = len(unique_species_ids)
+    print("Unique Species Count:", unique_species_count) 
     
-    print("Unique Species Count:", unique_species_count)  # This should match the SQL result
+    species_names = []
+    for row in unique_species_ids:
+        species_name = db(db.species.id == row.id).select(db.species.name).first().name
+        species_names.append(species_name)
+    
+    print("Species Names:", len(species_names))
     
     return dict(
         unique_species_count=unique_species_count,
+        species_names=species_names,
         my_callback_url=URL('my_callback', signer=url_signer)
     )
+
 
 
 
