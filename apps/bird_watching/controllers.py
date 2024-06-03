@@ -56,36 +56,40 @@ def index():
 @action('statistics')
 @action.uses('statistics.html', db, auth, url_signer)
 def statistics():
+    return dict(
+        my_callback_url = URL('my_callback', signer=url_signer),
+        get_user_statistics_url = URL('get_user_statistics'),
+    )
+
+
+
+@action('get_user_statistics', method='GET')
+@action.uses(db, auth, url_signer)
+def get_user_statistics():
     user_email = "sample0@gmail.com"
     query = (db.checklist.user_email == user_email)
-    unique_species_ids = db(query).select(
+    unique_species_data = db(query).select(
         db.species.id,
+        db.species.name,
+        db.checklist.observation_date,
         distinct=True,
         join=[
             db.sighting.on(db.sighting.checklist_id == db.checklist.id),
             db.species.on(db.sighting.species_id == db.species.id)
         ]
     )
-    
-    # Count unique species IDs
-    unique_species_count = len(unique_species_ids)
-    print("Unique Species Count:", unique_species_count) 
-    
+
     species_names = []
-    for row in unique_species_ids:
-        species_name = db(db.species.id == row.id).select(db.species.name).first().name
-        species_names.append(species_name)
+    observation_dates = []
     
-    print("Species Names:", len(species_names))
-    
+    for row in unique_species_data:
+        species_names.append(row.species.name)
+        observation_dates.append(row.checklist.observation_date)
+
     return dict(
-        unique_species_count=unique_species_count,
         species_names=species_names,
-        my_callback_url=URL('my_callback', signer=url_signer)
+        observation_dates=observation_dates,
     )
-
-
-
 
 
 
