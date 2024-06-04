@@ -104,7 +104,6 @@ def statistics():
 
 
 from collections import defaultdict
-
 @action('get_user_statistics', method='GET')
 @action.uses(db, auth, url_signer)
 def get_user_statistics():
@@ -114,6 +113,8 @@ def get_user_statistics():
         db.species.id,
         db.species.name,
         db.checklist.observation_date,
+        db.checklist.latitude,
+        db.checklist.longitude,
         distinct=True,
         join=[
             db.sighting.on(db.sighting.checklist_id == db.checklist.id),
@@ -128,19 +129,23 @@ def get_user_statistics():
         species_name = row.species.name
         observation_date = row.checklist.observation_date
         date_str = observation_date.strftime('%Y-%m-%d')  # Convert date to string
-        species_dates[species_name].append(date_str)
+        latitude = row.checklist.latitude
+        longitude = row.checklist.longitude
+        species_dates[species_name].append({
+            'date': date_str,
+            'latitude': latitude,
+            'longitude': longitude
+        })
         if date_str in sightings_count:
             sightings_count[date_str] += 1
         else:
             sightings_count[date_str] = 1
     
     species_dates = dict(species_dates)  # Convert defaultdict to a regular dict for JSON serialization
-    print(sightings_count)
     return dict(
         species_dates=species_dates,
         sightings_count=sightings_count,
     )
-
 
 
 @action('location')
