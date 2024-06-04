@@ -36,22 +36,47 @@ app.methods = {
         datasets: [{
           label: 'Sightings Count',
           data: data,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
+          borderColor: 'rgba(255, 99, 132, 1)', // Red color
           borderWidth: 1
-        }]
+      }]
       },
       options: {
+        maintainAspectRatio: false, // Disable aspect ratio
+        responsive: true, // Make the chart responsive
         scales: {
-          y: {
-            beginAtZero: true
-          }
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Number of Sightings',
+                    padding: {
+                        top: 20 // Adjust the top padding as needed
+                    }
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Dates Observed'
+                }
+            }
+        },
+        width: 800,
+        height: 600,
+        plugins: {
+            legend: {
+                display: false // Hide legend
+            }
         }
-      }
+    }
+    
     });
-  },
+  },  
   sortSightings() {
     const order = this.sortOrder;
+    // Close all cards
+    this.isVisible = {};
     if (!order) {
       this.sortedSpeciesDates = null;
     } else {
@@ -64,6 +89,8 @@ app.methods = {
       );
     }
   },
+  
+  
   initializeMap(speciesIndex) {
     const dates = this.species_dates[Object.keys(this.species_dates)[speciesIndex]];
     const mapId = 'map-' + speciesIndex;
@@ -107,7 +134,17 @@ app.computed = {
 app.vue = Vue.createApp({
   data: app.data,
   methods: app.methods,
-  computed: app.computed
+  computed: app.computed,
+  watch: {
+    // Watch for changes in sortOrder and close all cards when it changes
+    sortOrder: {
+      handler(newValue, oldValue) {
+        // Close all cards
+        this.isVisible = {};
+      },
+      immediate: true // Trigger the handler immediately when sortOrder changes
+    }
+  }
 }).mount("#app");
 
 // Function to load data from the backend
@@ -136,4 +173,3 @@ app.load_data = function() {
 
 // Load data when the app is ready
 app.load_data();
-
