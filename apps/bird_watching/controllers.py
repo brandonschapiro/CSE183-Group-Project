@@ -64,6 +64,47 @@ def statistics():
 
 
 
+# @action('get_user_statistics', method='GET')
+# @action.uses(db, auth, url_signer)
+# def get_user_statistics():
+#     user_email = "sample0@gmail.com"
+#     query = (db.checklist.user_email == user_email)
+#     unique_species_data = db(query).select(
+#         db.species.id,
+#         db.species.name,
+#         db.checklist.observation_date,
+#         distinct=True,
+#         join=[
+#             db.sighting.on(db.sighting.checklist_id == db.checklist.id),
+#             db.species.on(db.sighting.species_id == db.species.id)
+#         ]
+#     )
+    
+#     species_names = []
+#     observation_dates = []
+#     sightings_count = {}
+
+#     for row in unique_species_data:
+#         species_names.append(row.species.name)
+#         observation_date = row.checklist.observation_date
+#         observation_dates.append(observation_date)
+#         # Convert date to string for JSON serialization
+#         date_str = observation_date.isoformat()
+#         if date_str in sightings_count:
+#             sightings_count[date_str] += 1
+#         else:
+#             sightings_count[date_str] = 1
+
+#     print(sightings_count)
+#     return dict(
+#         species_names=species_names,
+#         observation_dates=observation_dates,
+#         sightings_count=sightings_count,
+#     )
+
+
+from collections import defaultdict
+
 @action('get_user_statistics', method='GET')
 @action.uses(db, auth, url_signer)
 def get_user_statistics():
@@ -80,28 +121,25 @@ def get_user_statistics():
         ]
     )
     
-    species_names = []
-    observation_dates = []
+    species_dates = defaultdict(list)
     sightings_count = {}
 
     for row in unique_species_data:
-        species_names.append(row.species.name)
+        species_name = row.species.name
         observation_date = row.checklist.observation_date
-        observation_dates.append(observation_date)
-        # Convert date to string for JSON serialization
-        date_str = observation_date.isoformat()
+        date_str = observation_date.strftime('%Y-%m-%d')  # Convert date to string
+        species_dates[species_name].append(date_str)
         if date_str in sightings_count:
             sightings_count[date_str] += 1
         else:
             sightings_count[date_str] = 1
-
+    
+    species_dates = dict(species_dates)  # Convert defaultdict to a regular dict for JSON serialization
     print(sightings_count)
     return dict(
-        species_names=species_names,
-        observation_dates=observation_dates,
+        species_dates=species_dates,
         sightings_count=sightings_count,
     )
-
 
 
 
