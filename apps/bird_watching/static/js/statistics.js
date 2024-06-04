@@ -9,9 +9,11 @@ app.data = function() {
   return {
     // Initial data
     species_dates: {},
+    sortedSpeciesDates: null,
     searchTerm: "",
     isVisible: {},
-    sightings_count:{}
+    sightings_count: {},
+    sortOrder: "" // To keep track of the selected sort order
   };
 };
 
@@ -19,6 +21,11 @@ app.data = function() {
 app.methods = {
   toggleVisibility(species) {
     this.isVisible[species] = !this.isVisible[species];
+    if (this.isVisible[species]) {
+      this.$nextTick(() => {
+        this.initializeMap(species);
+      });
+    }
   },
   renderChart(labels, data) {
     var ctx = document.getElementById('sightingsChart').getContext('2d');
@@ -42,19 +49,54 @@ app.methods = {
         }
       }
     });
+  },
+  sortSightings() {
+    const order = this.sortOrder;
+    if (!order) {
+      this.sortedSpeciesDates = null;
+    } else {
+      this.sortedSpeciesDates = Object.fromEntries(
+        Object.entries(this.species_dates).sort(([, datesA], [, datesB]) => {
+          const dateA = new Date(datesA[0].date);
+          const dateB = new Date(datesB[0].date);
+          return order === 'earliest' ? dateA - dateB : dateB - dateA;
+        })
+      );
+    }
+  },
+  initializeMap(speciesIndex) {
+    const dates = this.species_dates[Object.keys(this.species_dates)[speciesIndex]];
+    const mapId = 'map-' + speciesIndex;
+    const map = L.map(mapId).setView([0, 0], 2); // Set initial view
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    dates.forEach(sighting => {
+      const lat = sighting.latitude;
+      const lon = sighting.longitude;
+      L.marker([lat, lon]).addTo(map);
+    });
+
+    if (dates.length > 0) {
+      const latLngBounds = dates.map(sighting => [sighting.latitude, sighting.longitude]);
+      map.fitBounds(latLngBounds);
+    }
   }
 };
 
 // Define Vue computed properties
 app.computed = {
   filteredSpeciesDates() {
+    const speciesDatesToUse = this.sortedSpeciesDates || this.species_dates;
     // Filter species based on the search term
     if (!this.searchTerm) {
-      return this.species_dates;
+      return speciesDatesToUse;
     }
     const term = this.searchTerm.toLowerCase();
     return Object.fromEntries(
-      Object.entries(this.species_dates).filter(([species, dates]) =>
+      Object.entries(speciesDatesToUse).filter(([species, dates]) =>
         species.toLowerCase().includes(term)
       )
     );
@@ -77,7 +119,6 @@ app.load_data = function() {
       // Prepare data for Chart.js
       let labels = Object.keys(response.data.sightings_count);
       let data = Object.values(response.data.sightings_count);
-      console.log(labels, data);
 
       // Initialize isVisible to be false for all species
       app.vue.isVisible = Object.keys(response.data.species_dates).reduce((acc, key, index) => {
@@ -93,6 +134,6 @@ app.load_data = function() {
     });
 };
 
-
 // Load data when the app is ready
 app.load_data();
+
