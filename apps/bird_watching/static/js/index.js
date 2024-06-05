@@ -15,7 +15,7 @@ app.data = {
             species: [],
             speciesList: [],
             selectedSpecies: null,
-
+            heatMap: null, 
             markers: []
         };
     },
@@ -74,15 +74,15 @@ app.data = {
         },
         updateMap: function(sightings) {
             // Clear existing markers
-            this.markers.forEach(marker => this.map.removeLayer(marker));
-            this.markers = [];
+            let birds = [];
 
             // Add new markers
             sightings.forEach(sighting => {
-                console.log(sighting);
-                let marker = L.marker([parseFloat(sighting.checklist.latitude), parseFloat(sighting.checklist.longitude)]).addTo(this.map);
-                this.markers.push(marker);
+                console.log("hi", sighting);
+                birds.push([sighting.checklist.latitude, sighting.checklist.longitude]); 
             });
+
+            this.heatMap.setLatLngs(birds)
         },
         filteredSpecies: function() {
             return this.species.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()));
@@ -96,16 +96,19 @@ app.init = () => {
 
     navigator.geolocation.getCurrentPosition((userPosition) => {
         console.log("User position", userPosition);
-    })
-    app.vue.map = L.map('map').setView([37.0, -122.0], 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(app.vue.map);
-    app.vue.map.on('click', app.vue.click_listener);
 
-    // Fetch initial data
-    app.vue.fetchSpecies();
+        app.vue.map = L.map('map').setView([userPosition.coords.latitude, userPosition.coords.longitude], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(app.vue.map);
+    
+        app.vue.map.on('click', app.vue.click_listener);
+        app.vue.heatMap = L.heatLayer([], {radius: 25}).addTo(app.vue.map);
+        console.log("heatMap", app.vue.heatMap)
+        // Fetch initial data
+        app.vue.fetchSpecies();
+    })
 };
 
 app.init();
