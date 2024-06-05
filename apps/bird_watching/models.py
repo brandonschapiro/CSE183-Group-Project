@@ -41,21 +41,21 @@ db.define_table('sighting',
 #Initializes database tables with sample data, as well as links sample data by database table id instead of using the sampling event identifier provided in the csv files.
 #Will need to set your own path to run properly, initializing the database took around 5 minutes on my machine, not optimized very well but should only need to run once
 if db(db.species).isempty():
-    with open('/mnt/c/Programming/CSE 183/Final Project/starter_vue3/apps/bird_watching/sample_data/species.csv', 'r') as f:
+    with open('/Users/liljgremlin/Documents/GitHub/CSE183-Group-Project/apps/bird_watching/sample_data/species.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             db.species.insert(name=row[0])
 
 if db(db.checklist).isempty():
     sights = []
-    with open('/mnt/c/Programming/CSE 183/Final Project/starter_vue3/apps/bird_watching/sample_data/sightings.csv', 'r') as sight:
+    with open('/Users/liljgremlin/Documents/GitHub/CSE183-Group-Project/apps/bird_watching/sample_data/sightings.csv', 'r') as sight:
                 sightings = csv.reader(sight)
                 next(sightings, None)
                 for row in sightings:
                     sights.append(row)
 
     checklists = []
-    with open('/mnt/c/Programming/CSE 183/Final Project/starter_vue3/apps/bird_watching/sample_data/checklists.csv', 'r') as check:
+    with open('/Users/liljgremlin/Documents/GitHub/CSE183-Group-Project/apps/bird_watching/sample_data/checklists.csv', 'r') as check:
         checks = csv.reader(check)
         next(checks, None)
         for row in checks:

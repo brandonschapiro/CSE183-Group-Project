@@ -35,11 +35,31 @@ url_signer = URLSigner(session)
 
 @action('index')
 @action.uses('index.html', db, auth, url_signer)
-def index():
+def index():    
     return dict(
-        # COMPLETE: return here any signed URLs you need.
-        my_callback_url = URL('my_callback', signer=url_signer),
+        my_callback_url=URL('my_callback', signer=url_signer),
+        get_species_url=URL('get_species', signer=url_signer),
+        get_sightings_url=URL('get_sightings', signer=url_signer)
     )
+
+@action('get_species', method=['GET'])
+@action.uses(db, auth)
+def get_species(path=None):
+    print("hi from get_species")
+    species = db(db.species).select().as_list()
+    return dict(species=species)
+
+@action('get_sightings', method=['GET'])
+@action.uses(db)
+def get_sightings():
+    
+    species_id = request.params.get('species_id')
+    if species_id:
+        query = (db.sighting.species_id == species_id) & (db.sighting.checklist_id == db.checklist.id)
+    else:
+        query = db.sighting.checklist_id == db.checklist.id
+    sightings = db(query).select(db.sighting.ALL, db.checklist.latitude, db.checklist.longitude).as_list()
+    return dict(sightings=sightings)
 
 @action('checklist')
 @action.uses('checklist.html', db, auth, url_signer)
