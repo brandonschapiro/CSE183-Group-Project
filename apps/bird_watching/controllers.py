@@ -107,7 +107,9 @@ from collections import defaultdict
 @action('get_user_statistics', method='GET')
 @action.uses(db, auth, url_signer)
 def get_user_statistics():
-    user_email = "sample0@gmail.com"
+    user_email = get_user_email
+    print(user_email)
+    # user_email = "sample0@gmail.com"
     query = (db.checklist.user_email == user_email)
     unique_species_data = db(query).select(
         db.species.id,
