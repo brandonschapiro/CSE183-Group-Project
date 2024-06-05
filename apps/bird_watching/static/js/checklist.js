@@ -1,32 +1,50 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
 
-
-app.data = {    
+app.data = {
     data: function() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
+            searchTerm: '',
+            speciesResults: [],
+            sightings: []
         };
     },
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            this.my_value += 1;
+        searchSpecies: _.debounce(function() {
+            axios.get(get_species_url, { params: { term: this.searchTerm }}).then((response) => {
+                this.speciesResults = response.data.species;
+            });
+        }, 300),
+        addSpecies: function(species) {
+            this.sightings.push({
+                id: species.id,
+                name: species.name,
+                species_count: 1
+            });
+            this.speciesResults = [];
+            this.searchTerm = '';
         },
+        removeSpecies: function(index) {
+            this.sightings.splice(index, 1);
+        },
+        submitChecklist: function() {
+            let data = {
+                latitude: 37.7749,  // Sample latitude
+                longitude: -122.4194,  // Sample longitude
+                observation_date: new Date().toISOString().split('T')[0],
+                observation_time: new Date().toISOString().split('T')[1].split('.')[0],
+                observation_duration: 60,  // Sample duration in minutes
+                sightings: this.sightings
+            };
+            axios.post(submit_checklist_url, data).then((response) => {
+                if (response.data.status === 'success') {
+                    alert("Checklist submitted successfully!");
+                    this.sightings = [];
+                }
+            });
+        }
     }
 };
 
 app.vue = Vue.createApp(app.data).mount("#app");
-
-app.load_data = function () {
-    axios.get(my_callback_url).then(function (r) {
-        app.vue.my_value = r.data.my_value;
-    });
-}
-
-app.load_data();
