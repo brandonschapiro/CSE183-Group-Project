@@ -3,11 +3,13 @@
 let app = {};
 
 app.data = {
-    data: function() {
+    data() {
         return {
             searchTerm: '',
             speciesResults: [],
-            sightings: []
+            sightings: [],
+            latitude: null,
+            longitude: null
         };
     },
     methods: {
@@ -16,7 +18,7 @@ app.data = {
                 this.speciesResults = response.data.species;
             });
         }, 300),
-        addSpecies: function(species) {
+        addSpecies(species) {
             this.sightings.push({
                 id: species.id,
                 name: species.name,
@@ -25,13 +27,18 @@ app.data = {
             this.speciesResults = [];
             this.searchTerm = '';
         },
-        removeSpecies: function(index) {
+        removeSpecies(index) {
             this.sightings.splice(index, 1);
         },
-        submitChecklist: function() {
+        submitChecklist() {
+            if (this.latitude === null || this.longitude === null) {
+                alert("Please select a location on the map.");
+                return;
+            }
+
             let data = {
-                latitude: 37.7749,  // Sample latitude
-                longitude: -122.4194,  // Sample longitude
+                latitude: this.latitude,
+                longitude: this.longitude,
                 observation_date: new Date().toISOString().split('T')[0],
                 observation_time: new Date().toISOString().split('T')[1].split('.')[0],
                 observation_duration: 60,  // Sample duration in minutes
@@ -44,6 +51,11 @@ app.data = {
                 }
             });
         }
+    },
+    mounted() {
+        // This should be set based on user interaction on the map
+        this.latitude = 37.7749;
+        this.longitude = -122.4194;
     }
 };
 
