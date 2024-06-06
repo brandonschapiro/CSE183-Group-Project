@@ -19,8 +19,15 @@
   <table>
     <tr v-for="(sighting, index) in sightings">
       <td>{{ sighting.name }}</td>
-      <td><input type="number" v-model="sighting.species_count" min="1"></td>
-      <td><button @click="removeSpecies(index)">Remove</button></td>
+      <td>
+        <input type="number" v-model="sighting.species_count" min="1">
+      </td>
+      <td>
+        <button @click="incrementCount(index)">+</button>
+      </td>
+      <td>
+        <button @click="removeSpecies(index)">Remove</button>
+      </td>
     </tr>
   </table>
   <button @click="submitChecklist">Submit Checklist</button>
