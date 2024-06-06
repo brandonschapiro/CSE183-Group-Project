@@ -12,6 +12,7 @@ app.data = function() {
     sortedSpeciesDates: null,
     searchTerm: "",
     isVisible: {},
+    showAllDates: {}, 
     sightings_count: {},
     sortOrder: "" // To keep track of the selected sort order
   };
@@ -27,52 +28,72 @@ app.methods = {
       });
     }
   },
-  renderChart(labels, data) {
+  formatDate(dateString) {
+    var date = new Date(dateString);
+    var month = (date.getMonth() + 1).toString().padStart(2, '0');
+    var day = date.getDate().toString().padStart(2, '0');
+    var year = date.getFullYear();
+    return month + '/' + day + '/' + year;
+},
+renderChart(labels, data) {
+    // Format the labels to mm/dd/yyyy
+    var formattedLabels = labels.map(this.formatDate);
+
     var ctx = document.getElementById('sightingsChart').getContext('2d');
     new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Sightings Count',
-          data: data,
-          backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
-          borderColor: 'rgba(255, 99, 132, 1)', // Red color
-          borderWidth: 1
-      }]
-      },
-      options: {
-        maintainAspectRatio: false, // Disable aspect ratio
-        responsive: true, // Make the chart responsive
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: 'Number of Sightings',
-                    padding: {
-                        top: 20 // Adjust the top padding as needed
+        type: 'line',
+        data: {
+            labels: formattedLabels,
+            datasets: [{
+                label: 'Sightings Count',
+                data: data,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
+                borderColor: 'rgba(255, 99, 132, 1)', // Red color
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false, // Disable aspect ratio
+            responsive: true, // Make the chart responsive
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Sightings',
+                        padding: {
+                            top: 20 // Adjust the top padding as needed
+                        },
+                        font: {
+                            weight: 'bold', // Make the text bold
+                            size: 14 // Adjust the size as needed
+                        },
+                        color: 'black'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dates Observed',
+                        font: {
+                            weight: 'bold', // Make the text bold
+                            size: 14 // Adjust the size as needed
+                        },
+                        color: 'black'
                     }
                 }
             },
-            x: {
-                title: {
-                    display: true,
-                    text: 'Dates Observed'
+            width: 800,
+            height: 600,
+            plugins: {
+                legend: {
+                    display: false // Hide legend
                 }
             }
-        },
-        width: 800,
-        height: 600,
-        plugins: {
-            legend: {
-                display: false // Hide legend
-            }
         }
-    }
-    
     });
-  },  
+},
+
   sortSightings() {
     const order = this.sortOrder;
     // Close all cards
@@ -153,12 +174,18 @@ app.load_data = function() {
     .then(function(response) {
       app.vue.species_dates = response.data.species_dates;
       app.vue.sightings_count = response.data.sightings_count;
+      
       // Prepare data for Chart.js
       let labels = Object.keys(response.data.sightings_count);
       let data = Object.values(response.data.sightings_count);
 
-      // Initialize isVisible to be false for all species
+      // Initialize isVisible and showAllDates to be false for all species
       app.vue.isVisible = Object.keys(response.data.species_dates).reduce((acc, key, index) => {
+        acc[index] = false;
+        return acc;
+      }, {});
+      
+      app.vue.showAllDates = Object.keys(response.data.species_dates).reduce((acc, key, index) => {
         acc[index] = false;
         return acc;
       }, {});
