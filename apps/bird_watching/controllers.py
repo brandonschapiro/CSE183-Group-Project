@@ -38,13 +38,14 @@ import json
 url_signer = URLSigner(session)
 
 @action('index')
-@action.uses('index.html', db, auth, url_signer)
+@action.uses('index.html', db, auth.user, url_signer)
 def index():    
     return dict(
         my_callback_url=URL('my_callback', signer=url_signer),
         get_species_url=URL('get_species', signer=url_signer),
         get_sightings_url=URL('get_sightings', signer=url_signer)
     )
+
 
 @action('get_species', method=['GET'])
 @action.uses(db, auth)

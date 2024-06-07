@@ -17,8 +17,10 @@
     <div class="column">
       <h1 class="title"><i class="fa-solid fa-cube"></i> Bird Watching App</h1>
       <div class="buttons">
-        <button class="button is-primary" @click="clearPoints">Clear Rectangle</button>
-        <a class="button is-link">Statistics on region</a> 
+        <button class="button is-primary" @click="goToChecklist">Sumbit a checklist</button>
+        <button class="button is-info" @click="goToSightings">My Birding</button>
+        <button class="button is-warning" @click="statsOnRegion" v-bind:disabled="!rectangle">Statistics on region</button> 
+        <button class="button is-danger" @click="clearPoints" v-bind:disabled="!rectangle">Clear Rectangle</button>
       </div>
       
       <div class="field">
