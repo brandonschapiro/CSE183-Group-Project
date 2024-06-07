@@ -21,32 +21,45 @@
         <button class="button is-info" @click="goToSightings">My Birding</button>
         <button class="button is-warning" @click="statsOnRegion" v-bind:disabled="!rectangle">Statistics on region</button> 
         <button class="button is-danger" @click="clearPoints" v-bind:disabled="!rectangle">Clear Rectangle</button>
+        <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
       </div>
       
       <div class="field">
         <label class="label">Select Species</label>
         <div class="control">
-            <input class="input" type="text" placeholder="Search species" v-model="search" @input="filterSpecies">
-            <div class="dropdown buttons-container" :class="{'is-active': filteredSpecies.length}">
-                <div class="dropdown-menu">
-                    <div class="dropdown-content">
-                        <a v-for="item in filteredSpecies" :key="item.id" class="dropdown-item" @click="selectSpecies(item)">
-                            {{ item.name }}
-                        </a>
-                    </div>
-                </div>
-            </div>
+          <input
+            class="input"
+            type="text"
+            placeholder="Search species"
+            v-model="search"
+            @input="filterSpecies"
+          />
+          <div class="box">
+            <ul>
+              <li
+                v-for="species in selectedSpecies"
+                :key="species.id"
+                @click="deselectSpecies(species)"
+                class="species-item is-primary button"
+              >
+                {{ species.name }}
+              </li>
+            </ul>
+          </div>
+          <div class="box">
+            <ul>
+              <li
+                v-for="species in filteredSpecies"
+                :key="species.id"
+                @click="selectSpecies(species)"
+                class="species-item is-active button"
+              >
+                {{ species.name }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-
-      <div class="box">
-        <ul>
-            <li v-for="species in speciesList" :key="species.id" @click="selectSpecies(species)" class="species-item button">
-                {{ species.name }}
-            </li>
-        </ul>
-      </div>
-
     </div>
   </div>
 </div>

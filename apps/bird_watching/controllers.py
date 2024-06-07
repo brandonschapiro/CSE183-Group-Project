@@ -59,11 +59,13 @@ def get_species(path=None):
 def get_sightings():
     
     species_id = request.params.get('species_id')
+    
     if species_id:
         query = (db.sighting.species_id == species_id) & (db.sighting.checklist_id == db.checklist.id)
     else:
         query = db.sighting.checklist_id == db.checklist.id
-    sightings = db(query).select(db.sighting.ALL, db.checklist.latitude, db.checklist.longitude).as_list()
+
+    sightings = db(query).select(db.sighting.species_count, db.checklist.latitude, db.checklist.longitude).as_list()
     return dict(sightings=sightings)
 
 @action('checklist')
@@ -82,8 +84,6 @@ def statistics():
         my_callback_url = URL('my_callback', signer=url_signer),
         get_user_statistics_url = URL('get_user_statistics'),
     )
-
-
 
 # @action('get_user_statistics', method='GET')
 # @action.uses(db, auth, url_signer)

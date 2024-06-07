@@ -7,111 +7,117 @@ let app = {};
 app.data = {    
     data: function() {
         return {
-            my_value: 1,
             map: null,
+            heatMap: null,  
             rectangle: null,
-            points: [],
             search: '',
-            species: [],
+            marker: null,
             speciesList: [],
-            selectedSpecies: null,
-            heatMap: null, 
-            markers: [], 
-            checklist: {}, 
+            sightings: new Map(), 
+            selectedSpecies: [],
         };
     },
+    computed: {
+        filteredSpecies: function() {
+            return this.speciesList.filter((species) =>
+              species.name.toLowerCase().includes(this.search.toLowerCase())
+            );
+        }
+    },
     methods: {
-        my_function: function() {
-            this.my_value += 1;
-        },
         click_listener: function(e) {
             console.log("clicked on map at", e.latlng);
 
             if (this.rectangle) {
-                console.log("clear map")
                 this.map.removeLayer(this.rectangle);
                 this.rectangle = null; 
-                this.points = []; 
-            } 
+            } else if (this.marker) {
+                this.map.removeLayer(this.marker); 
+                this.marker = null;
+                
+                // let bounds = [
+                //     [this.points[0].latlng.lat , this.points[0].latlng.lng],
+                //     [this.points[1].latlng.lat , this.points[1].latlng.lng],
+                // ];
 
-            this.points.push(e);
-
-            if (this.points.length == 2) {
-                console.log("points")
-                let bounds = [
-                    [this.points[0].latlng.lat , this.points[0].latlng.lng],
-                    [this.points[1].latlng.lat , this.points[1].latlng.lng],
-                ];
-                this.rectangle = L.rectangle(bounds, {color: "#ff7800", weight: 1});
-                this.rectangle.addTo(this.map);
+                // this.rectangle = L.rectangle(bounds, {color: "#ff7800", weight: 1});
+                // this.rectangle.addTo(this.map);
+            } else {
+                this.marker = new L.Marker([e.latlng.lat, e.latlng.lng]);
+                console.log(this.marker); 
             }
         },
-        clearPoints: function(e) {
-            if (this.rectangle) {
-                console.log("clear map")
-                this.map.removeLayer(this.rectangle);
-                this.rectangle = null; 
-                this.points = []; 
-            } else {
-                console.log("rectangle is null");
-            }
+        clearSpecies: function() {
+            this.speciesList.push(...this.selectedSpecies); 
+            this.selectedSpecies = []; 
+            this.search = '';
+            // this.filterSpecies = []; 
+            // this.heatMap.setLatLngs([]); 
+            // this.heatMap.redraw(); 
         },
         fetchSpecies: function() {
             axios.get(get_species_url).then((response) => {
                 this.speciesList = response.data.species;
-                this.fetchChecklist(response.data.species);
             });
         },
-        fetchChecklist: function(speciesList) {
-            let sightings = []; 
-            console.log("hi from fetchchecklist", speciesList.length);
+        clearPoints: function() {
 
-            for (let i = 0; i < speciesList.length; i++) {
-                let species = speciesList[i]; 
-                axios.get(get_sightings_url, { params: { species_id: species ? species.id : null } }).then((response) => {
-                    sightings.push(...response.data.sightings);
-                    console.log("fetched " + species.name + " checklist");  
-                    console.log(("sightings", response.data.sightings))
-                });
-            }
-        }, 
-        selectSpecies: function(species) {
-            this.selectedSpecies = species;
-            this.search = species.name;
-            this.species = [];
-            console.log("selected ", species.name)
-            axios.get(get_sightings_url, { params: { species_id: this.selectedSpecies ? this.selectedSpecies.id : null } }).then((response) => {
-                this.updateMap(response.data.sightings);
+        },
+        fetchChecklist: function() {
+            axios.get(get_sightings_url, {}).then((response) => {
+                console.log("fetchChecklist response: ", response); 
+                this.updateMap(response.data.sightings); 
             });
+        }, 
+        // selectSpecies: function(species) {
+        //     this.search = species.name;
+        //     console.log("selected ", species.name)
+        //     this.filteredSpecies.push(species); 
+            
+        //     // axios.get(get_sightings_url, { params: { species_id: species ? species.id : null } }).then((response) => {
+            
+        //     //     this.updateMap();
+        //     // });
+        // },
+        selectSpecies(species) {
+            if (!this.selectedSpecies.includes(species)) {
+              this.selectedSpecies.push(species);
+              this.speciesList = this.speciesList.filter((s) => s.id !== species.id);
+              this.search = ''; // Clear the search input
+            }
+          },
+        deselectSpecies(species) {
+            this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
+            this.speciesList.push(species);
         },
         filterSpecies: function() {
             // 
-        },
-        updateMap: function(sightings) {
+        }, 
+        updateMap: function() { 
 
             console.log("start updateMap"); 
+            let birds = []; 
 
-            // Add new markers
-            sightings.forEach(sighting => {
-                birds.push([sighting.checklist.latitude, sighting.checklist.longitude]); 
-            });
+            // // this.sightingsBuffer.forEach(sightings => {
+            // //      // Add new markers
+            // //     sightings.forEach(sighting => {
+            // //         birds.push([sighting.checklist.latitude, sighting.checklist.longitude, sighting.sighting.species_count]); 
+            // //     });
+            // // });
 
-            this.heatMap.setLatLngs(birds)
+            // this.heatMap.setLatLngs(birds)
 
             console.log("end updateMap");
         },
-        filteredSpecies: function() {
-            return this.species.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()));
-        }, 
         goToChecklist: function() {
             window.location.href = '/bird_watching/checklist'; 
         },
-        statsOnRegion() {
+        statsOnRegion: function() {
             if (this.rectangle == null) {return}
             const url = `/bird_watching/location?lat1=${this.points[0].latlng.lat}&long1=${this.points[0].latlng.lng}&lat2=${this.points[1].latlng.lat}&long2=${this.points[1].latlng.lng}`;
             window.location.href = url;
         },
-        goToSightings() {
+        goToSightings: function() {
             window.location.href = '/bird_watching/statistics';
         },
     }
@@ -134,16 +140,8 @@ app.init = () => {
         app.vue.heatMap = L.heatLayer([], {radius: 25}).addTo(app.vue.map);
         // Fetch initial data
         app.vue.fetchSpecies();
+        app.vue.fetchChecklist();
     })
-    app.vue.map = L.map('map').setView([37.0, -122.0], 13);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(app.vue.map);
-    app.vue.map.on('click', app.vue.click_listener);
-
-    // Fetch initial data
-    app.vue.fetchSpecies();
 };
 
 app.init();
