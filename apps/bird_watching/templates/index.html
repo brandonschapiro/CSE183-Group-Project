@@ -17,22 +17,21 @@
     <div class="column">
       <h1 class="title"><i class="fa-solid fa-cube"></i> Bird Watching App</h1>
       <div class="buttons">
-        <button class="button is-primary" @click="goToChecklist">Sumbit a checklist</button>
-        <button class="button is-info" @click="goToSightings">My Birding</button>
-        <button class="button is-warning" @click="statsOnRegion" v-bind:disabled="!rectangle">Statistics on region</button> 
-        <button class="button is-danger" @click="clearPoints" v-bind:disabled="!rectangle">Clear Rectangle</button>
+        <button class="button is-primary" @click="goToSightings">My Birding</button>
+        <button class="button is-info" @click="goToChecklist" v-bind:disabled="!marker">Sumbit a checklist</button>
+        <button class="button is-warning" @click="statsOnRegion" v-bind:disabled="!rectangle">Statistics on region</button>  
+        <button class="button is-danger" @click="clearTools" v-bind:disabled="!rectangle && !marker">Clear Tools</button>
         <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
       </div>
       
       <div class="field">
-        <label class="label">Select Species</label>
+        <label class="label">Search Species</label>
         <div class="control">
           <input
             class="input"
             type="text"
             placeholder="Search species"
             v-model="search"
-            @input="filterSpecies"
           />
           <div class="box">
             <ul>
@@ -40,7 +39,7 @@
                 v-for="species in selectedSpecies"
                 :key="species.id"
                 @click="deselectSpecies(species)"
-                class="species-item is-primary button"
+                class="species-item is-info button"
               >
                 {{ species.name }}
               </li>

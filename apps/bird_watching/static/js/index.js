@@ -4,6 +4,17 @@
 // and be used to initialize it.
 let app = {};
 
+function flatten(buffer) {
+    // flatten buffer 
+    let temp = [] 
+    
+    for (let i = 0; i < buffer.length; i++) {
+       temp.push(...buffer[i])
+    }
+
+    return temp; 
+}
+
 app.data = {    
     data: function() {
         return {
@@ -13,7 +24,7 @@ app.data = {
             search: '',
             marker: null,
             speciesList: [],
-            sightings: new Map(), 
+            buffer: [], // array of arrays,  
             selectedSpecies: [],
         };
     },
@@ -32,36 +43,47 @@ app.data = {
                 this.map.removeLayer(this.rectangle);
                 this.rectangle = null; 
             } else if (this.marker) {
+                
+                let bounds = [
+                    [this.marker._latlng.lat , this.marker._latlng.lng],
+                    [e.latlng.lat , e.latlng.lng],
+                ];
+
+                this.rectangle = L.rectangle(bounds, {color: "#ff7800", weight: 1});
+                this.rectangle.addTo(this.map);
+
                 this.map.removeLayer(this.marker); 
                 this.marker = null;
-                
-                // let bounds = [
-                //     [this.points[0].latlng.lat , this.points[0].latlng.lng],
-                //     [this.points[1].latlng.lat , this.points[1].latlng.lng],
-                // ];
-
-                // this.rectangle = L.rectangle(bounds, {color: "#ff7800", weight: 1});
-                // this.rectangle.addTo(this.map);
             } else {
                 this.marker = new L.Marker([e.latlng.lat, e.latlng.lng]);
-                console.log(this.marker); 
+                this.marker.addTo(this.map);
             }
         },
         clearSpecies: function() {
+            console.log("clearSpecies")
             this.speciesList.push(...this.selectedSpecies); 
             this.selectedSpecies = []; 
             this.search = '';
-            // this.filterSpecies = []; 
-            // this.heatMap.setLatLngs([]); 
-            // this.heatMap.redraw(); 
+            this.heatMap.setLatLngs([]); 
+            this.heatMap.redraw(); 
+            this.fetchChecklist(); 
+        },
+        clearTools: function() { 
+            if(this.rectangle) {
+                this.map.removeLayer(this.rectangle)
+            }
+
+            if(this.marker) {
+                this.map.removeLayer(this.marker); 
+            }
+
+            this.rectangle = null; 
+            this.marker = null;
         },
         fetchSpecies: function() {
             axios.get(get_species_url).then((response) => {
                 this.speciesList = response.data.species;
             });
-        },
-        clearPoints: function() {
-
         },
         fetchChecklist: function() {
             axios.get(get_sightings_url, {}).then((response) => {
@@ -69,53 +91,46 @@ app.data = {
                 this.updateMap(response.data.sightings); 
             });
         }, 
-        // selectSpecies: function(species) {
-        //     this.search = species.name;
-        //     console.log("selected ", species.name)
-        //     this.filteredSpecies.push(species); 
-            
-        //     // axios.get(get_sightings_url, { params: { species_id: species ? species.id : null } }).then((response) => {
-            
-        //     //     this.updateMap();
-        //     // });
-        // },
         selectSpecies(species) {
-            if (!this.selectedSpecies.includes(species)) {
-              this.selectedSpecies.push(species);
-              this.speciesList = this.speciesList.filter((s) => s.id !== species.id);
-              this.search = ''; // Clear the search input
-            }
+            this.selectedSpecies.push(species);
+            this.speciesList = this.speciesList.filter((s) => s.id !== species.id);
+            this.search = ''; // Clear the search input
+            console.log(species);
+            axios.get(get_sightings_url, { species_id: species.id}).then((response) => {
+
+                console.log("selectSpecies response: ", response); 
+                this.buffer.push(response.data.sightings); // 
+
+                this.updateMap(flatten(this.buffer)); 
+            });
           },
         deselectSpecies(species) {
-            this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
             this.speciesList.push(species);
+            console.log("species", species)
+            const index = this.selectedSpecies.indexOf(species); 
+            console.log("index", index)
+            this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
+            this.buffer.splice(index, 0);
+            this.selectedSpecies.splice(index, 0); 
+            this.updateMap(this.buffer);
         },
-        filterSpecies: function() {
-            // 
-        }, 
-        updateMap: function() { 
-
-            console.log("start updateMap"); 
-            let birds = []; 
-
-            // // this.sightingsBuffer.forEach(sightings => {
-            // //      // Add new markers
-            // //     sightings.forEach(sighting => {
-            // //         birds.push([sighting.checklist.latitude, sighting.checklist.longitude, sighting.sighting.species_count]); 
-            // //     });
-            // // });
-
-            // this.heatMap.setLatLngs(birds)
-
-            console.log("end updateMap");
+        updateMap: function(sightings) { 
+            let temp = []; 
+            sightings.forEach(sighting => {
+                temp.push([sighting.checklist.latitude, sighting.checklist.longitude, sighting.sighting.species_count])
+            });
+            this.heatMap.setLatLngs(temp); 
+            this.heatMap.redraw();
         },
         goToChecklist: function() {
-            window.location.href = '/bird_watching/checklist'; 
+            if (this.marker != null) {
+                window.location.href = `/bird_watching/checklist?lat=${this.marker._latlng.lat}&lng=${this.marker._latlng.lng}`; 
+            }
         },
         statsOnRegion: function() {
-            if (this.rectangle == null) {return}
-            const url = `/bird_watching/location?lat1=${this.points[0].latlng.lat}&long1=${this.points[0].latlng.lng}&lat2=${this.points[1].latlng.lat}&long2=${this.points[1].latlng.lng}`;
-            window.location.href = url;
+            if (this.rectangle == null) {
+                window.location.href = `/bird_watching/location?lat1=${this.points[0].latlng.lat}&lng1=${this.points[0].latlng.lng}&lat2=${this.points[1].latlng.lat}&lng2=${this.points[1].latlng.lng}`;
+            }
         },
         goToSightings: function() {
             window.location.href = '/bird_watching/statistics';
