@@ -1,17 +1,166 @@
 [[extend 'layout.html']]
 
 <style>
-[v-cloak] {
-     display: none;
+  [v-cloak] {
+    display: none;
+  }
+
+  .card-content {
+    position: relative;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .map-container {
+    width: 100%;
+    height: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .chart-container {
+    width: 100%;
+    height: 78vh;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  #sightingsChart {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .label {
+    font-weight: bold;
+    color: #555;
+  }
+
+  .input,
+  .select select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f4f4f4;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .media {
+    margin-bottom: 1rem;
+  }
+
+  .post-content {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .post-content:hover {
+    color: #007bff;
+  }
+
+  ul {
+    padding-left: 20px;
+  }
+
+  ul li {
+    margin-bottom: 5px;
+    color: #666;
+  }
+  .scrollable-container {
+  max-height: 500px; /* Adjust height as needed */
+  overflow-y: auto;
 }
+
 </style>
 
-
 <div class="section" id="app" v-cloak>
-  <!-- Put here your Vue.js template -->
-  <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
-  <p>Content: my_value: {{my_value}} </p>
-  <p>Statistics page</p>
+  <h1 class="title"><i class="fa-solid fa-cube"></i> User Statistics </h1>
+  <div class="container">
+    <div class="columns">
+      <!-- Main column -->
+      <div class="column is-three-quarters">
+        <div class="chart-container">
+          <canvas id="sightingsChart"></canvas>
+        </div>
+      </div>
+      <div class="column is-two-fifths">
+        <div class="section">
+
+          <!-- Search bar -->
+          <div class="field">
+            <label class="subtitle is-2">Search for a species</label>
+            <div class="control">
+              <input class="input" type="text" placeholder="Search..." v-model="searchTerm">
+            </div>
+          </div>
+
+          <!-- Sort dropdown -->
+          <div class="field">
+            <label class="label ">Sort sightings</label>
+            <div class="control">
+              <div class="select">
+                <select v-model="sortOrder" @change="sortSightings">
+                  <option value="">None</option>
+                  <option value="earliest">Sort by Earliest Dates</option>
+                  <option value="newest">Sort by Newest Dates</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scrollable container for list of bird sightings -->
+          <div class="scrollable-container">
+            <div class="card post mt-4" v-for="(dates, species, index) in filteredSpeciesDates" :key="species">
+              <div class="media">
+                <div class="media-content">
+                  <div class="card-content">
+                    <div class="content" @click="toggleVisibility(index)">
+                      <p class="post-content">{{ species }}</p>
+                      <ul v-if="isVisible[index]">
+                        <!-- <li v-for="(date, i) in dates" :key="date.date" v-if="i < 5">
+                          Observed on: {{ date.date }} at ({{ date.latitude }}, {{ date.longitude }})
+                        </li> -->
+                        
+                          <li v-if="!showAllDates[index]" @click.stop="showAllDates[index] = true" style="list-style: none;">
+                            <a href="javascript:void(0)">View Observation Dates</a>
+                          </li>
+                          <li v-else @click.stop="showAllDates[index] = false" style="list-style: none;">
+                            <a href="javascript:void(0)">Less</a>
+                          </li>
+                        
+                        
+                        <li v-for="(date, i) in dates" :key="date.date" v-if="showAllDates[index]">
+                          Observed on: {{ date.date }} at ({{ date.latitude }}, {{ date.longitude }})
+                        </li>
+                        
+                        
+                      </ul>
+                      <div class="map-container" :id="'map-' + index" v-if="isVisible[index]" @click.stop></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -19,6 +168,9 @@
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_user_statistics_url = "[[=XML(get_user_statistics_url)]]";
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/statistics.js"></script>
+
 [[end]]

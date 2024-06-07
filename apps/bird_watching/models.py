@@ -61,7 +61,8 @@ if db(db.checklist).isempty():
         for row in checks:
              checklists.append(row)
     for j in range(len(checklists)):
-        current_checklist = db.checklist.insert(user_email='sample@gmail.com', latitude=checklists[j][1], longitude=checklists[j][2], observation_date=checklists[j][3], observation_time=checklists[j][4], observation_duration=(int(float(checklists[j][6])) if checklists[j][6] else 0))
+        email = "sample" + str((j%10)) + "@gmail.com"
+        current_checklist = db.checklist.insert(user_email=email, latitude=checklists[j][1], longitude=checklists[j][2], observation_date=checklists[j][3], observation_time=checklists[j][4], observation_duration=(int(float(checklists[j][6])) if checklists[j][6] else 0))
         #Gets all sightings for the checklist being added and adds them to the database
         for i in range(len(sights)):
             if(sights[i][0] == checklists[j][0]):

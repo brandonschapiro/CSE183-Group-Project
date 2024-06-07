@@ -1,32 +1,62 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
 
-
-app.data = {    
-    data: function() {
+app.data = {
+    data() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
+            searchTerm: '',
+            speciesResults: [],
+            sightings: [],
+            latitude: null,
+            longitude: null
         };
     },
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            this.my_value += 1;
+        searchSpecies: _.debounce(function() {
+            axios.get(get_species_url, { params: { term: this.searchTerm }}).then((response) => {
+                this.speciesResults = response.data.species;
+            });
+        }, 300),
+        addSpecies(species) {
+            this.sightings.push({
+                id: species.id,
+                name: species.name,
+                species_count: 1
+            });
+            this.speciesResults = [];
+            this.searchTerm = '';
         },
+        removeSpecies(index) {
+            this.sightings.splice(index, 1);
+        },
+        submitChecklist() {
+            if (this.latitude === null || this.longitude === null) {
+                alert("Please select a location on the map.");
+                return;
+            }
+
+            let data = {
+                latitude: this.latitude,
+                longitude: this.longitude,
+                observation_date: new Date().toISOString().split('T')[0],
+                observation_time: new Date().toISOString().split('T')[1].split('.')[0],
+                observation_duration: 60,  // Sample duration in minutes
+                sightings: this.sightings
+            };
+            axios.post(submit_checklist_url, data).then((response) => {
+                if (response.data.status === 'success') {
+                    alert("Checklist submitted successfully!");
+                    this.sightings = [];
+                }
+            });
+        }
+    },
+    mounted() {
+        // This should be set based on user interaction on the map
+        this.latitude = 37.7749;
+        this.longitude = -122.4194;
     }
 };
 
 app.vue = Vue.createApp(app.data).mount("#app");
-
-app.load_data = function () {
-    axios.get(my_callback_url).then(function (r) {
-        app.vue.my_value = r.data.my_value;
-    });
-}
-
-app.load_data();
