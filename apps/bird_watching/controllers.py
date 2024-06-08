@@ -270,30 +270,30 @@ def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
 
-# # checklist
-# @action('get_species', method='GET')
-# @action.uses(db)
-# def get_species():
-#     term = request.query.get('term')
-#     results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
-#     return dict(species=[dict(id=row.id, name=row.name) for row in results])
+# checklist
+@action('get_species', method='GET')
+@action.uses(db)
+def get_species():
+    term = request.query.get('term')
+    results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
+    return dict(species=[dict(id=row.id, name=row.name) for row in results])
 
-# @action('submit_checklist', method='POST')
-# @action.uses(db, auth.user)
-# def submit_checklist():
-#     data = request.json
-#     checklist_id = db.checklist.insert(
-#         user_email=get_user_email(),
-#         latitude=data['latitude'],
-#         longitude=data['longitude'],
-#         observation_date=data['observation_date'],
-#         observation_time=data['observation_time'],
-#         observation_duration=data['observation_duration']
-#     )
-#     for sighting in data['sightings']:
-#         db.sighting.insert(
-#             checklist_id=checklist_id,
-#             species_id=sighting['species_id'],
-#             species_count=sighting['species_count']
-#         )
-#     return dict(status='success')
+@action('submit_checklist', method='POST')
+@action.uses(db, auth.user)
+def submit_checklist():
+    data = request.json
+    checklist_id = db.checklist.insert(
+        user_email=get_user_email(),
+        latitude=data['latitude'],
+        longitude=data['longitude'],
+        observation_date=data['observation_date'],
+        observation_time=data['observation_time'],
+        observation_duration=data['observation_duration']
+    )
+    for sighting in data['sightings']:
+        db.sighting.insert(
+            checklist_id=checklist_id,
+            species_id=sighting['species_id'],
+            species_count=sighting['species_count']
+        )
+    return dict(status='success')
