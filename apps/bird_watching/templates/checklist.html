@@ -7,36 +7,46 @@
 </style>
 
 <div class="section" id="app" v-cloak>
+  <!-- Page title with an icon -->
   <h1 class="title"><i class="fa-solid fa-cube"></i> Checklist Page</h1>
   <div>
+    <!-- Search input for species -->
     <input v-model="searchTerm" @input="searchSpecies" placeholder="Search for species">
     <ul>
+      <!-- List of species results from search -->
       <li v-for="species in speciesResults" @click="addSpecies(species)">
         {{ species.name }}
       </li>
     </ul>
   </div>
   <table>
+    <!-- Table of species sightings -->
     <tr v-for="(sighting, index) in sightings">
       <td>{{ sighting.name }}</td>
       <td>
+        <!-- Input for species count -->
         <input type="number" v-model="sighting.species_count" min="1">
       </td>
       <td>
+        <!-- Button to increment species count -->
         <button @click="incrementCount(index)">+</button>
       </td>
       <td>
+        <!-- Button to remove species from sightings -->
         <button @click="removeSpecies(index)">Remove</button>
       </td>
     </tr>
   </table>
+  <!-- Button to submit the checklist -->
   <button @click="submitChecklist">Submit Checklist</button>
 </div>
 
 [[block page_scripts]]
 <script>
+  // URLs for API endpoints
   let get_species_url = "[[=URL('get_species')]]";
   let submit_checklist_url = "[[=URL('submit_checklist')]]";
 </script>
+<!-- Import the checklist.js script -->
 <script src="js/checklist.js"></script>
 [[end]]
