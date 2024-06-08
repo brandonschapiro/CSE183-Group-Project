@@ -20,6 +20,10 @@ app.data = {
             chartData: [],
             svg: null,
             chart: null,
+            lat1: window.lat1,
+            lat2: window.lat2,
+            lng1: window.lng1,
+            lng2: window.lng2,
         };
     },
     computed:{
@@ -114,8 +118,7 @@ app.data = {
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
-    //this.checklists = this.checklistsData
-    axios.get(get_region_information_url, {params: {lat1:lat1,lat2:lat2,long1:long1,long2:long2}}).then(function(r) {
+    axios.get(get_region_information_url, {params: {lat1:app.vue.lat1,lat2:app.vue.lat2,lng1:app.vue.lng1,lng2:app.vue.lng2}}).then(function(r) {
         app.vue.checklists = r.data.checklists
         app.vue.sightings = r.data.sightings
         app.vue.unique_sightings = r.data.unique_sightings

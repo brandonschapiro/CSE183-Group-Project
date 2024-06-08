@@ -174,18 +174,18 @@ def get_user_statistics():
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
 def location():
-    lat1 = 37
-    lat2 = 36.99
-    long1 = -122.05
-    long2 = -122.08
+    lat1 = request.query.get('lat1')
+    lat2 = request.query.get('lat2')
+    lng1 = request.query.get('lng1')
+    lng2 = request.query.get('lng2')
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
         get_region_information_url = URL('get_region_information'),
         lat1 = lat1,
         lat2= lat2,
-        long1 = long1,
-        long2 = long2
+        lng1 = lng1,
+        lng2 = lng2
     )
 
 
@@ -195,15 +195,16 @@ def location():
 def get_region_information():
     lat1 = request.query.get('lat1')
     lat2 = request.query.get('lat2')
-    long1 = request.query.get('long1')
-    long2 = request.query.get('long2')
+    lng1 = request.query.get('lng1')
+    lng2 = request.query.get('lng2')
+    print(lat1, lat2, lng1, lng2)
     checklists = []
-    if(lat1 and lat2 and long1 and long2):
+    if(lat1 and lat2 and lng1 and lng2):
         minLat = min(lat1, lat2)
         maxLat = max(lat1, lat2)
-        minLong = min(long1, long2)
-        maxLong = min(long1, long2)
-        checklists = db(db.checklist.latitude.cast('float') >= minLat and db.checklist.latitude.cast('float') <= maxLat and db.checklist.longitude.cast('float') >= minLong and db.checklist.longitude.cast('float') <= maxLong).select()
+        minLng = min(lng1, lng2)
+        maxLng = min(lng1, lng2)
+        checklists = db(db.checklist.latitude.cast('float') >= minLat and db.checklist.latitude.cast('float') <= maxLat and db.checklist.longitude.cast('float') >= minLng and db.checklist.longitude.cast('float') <= maxLng).select()
     if(not checklists):
         checklists = db(db.checklist).select(orderby=db.checklist.id, limitby=(0, 100))
 
