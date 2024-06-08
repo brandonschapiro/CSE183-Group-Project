@@ -215,6 +215,7 @@ def get_region_information():
     sightings_dict = defaultdict(list)
     #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 time contributing (maybe later) - possibly add a time sighting in region statistic or like a first checklist in region date
     top_contributors = defaultdict(list)
+    contributor_species = defaultdict(set)
     all_sightings = db(db.sighting).select(left=db.species.on(db.sighting.species_id == db.species.id))
     for sight in all_sightings:
         sightings_dict[sight.sighting.checklist_id].append(sight)
@@ -232,7 +233,7 @@ def get_region_information():
             "sightings": []
         }
         if not top_contributors[checklist.user_email]:
-            top_contributors[checklist.user_email] = [1, 0, 0]
+            top_contributors[checklist.user_email] = [1, 0, 0, 0]
         else:
             top_contributors[checklist.user_email][0] += 1
         for sighting in sightings:
@@ -245,6 +246,8 @@ def get_region_information():
             }
             top_contributors[checklist.user_email][1] += 1
             top_contributors[checklist.user_email][2] += sighting.sighting.species_count
+            contributor_species[checklist.user_email].add(sighting.species.name)
+            top_contributors[checklist.user_email][3] = len(contributor_species[checklist.user_email])
             sightings_list.append(sighting_data)
             if(sighting.species.id not in unique_sighting_ids):
                 unique_sighting_ids.add(sighting.species.id)
@@ -270,30 +273,30 @@ def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
 
-# checklist
-@action('get_species', method='GET')
-@action.uses(db)
-def get_species():
-    term = request.query.get('term')
-    results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
-    return dict(species=[dict(id=row.id, name=row.name) for row in results])
+# # checklist
+# @action('get_species', method='GET')
+# @action.uses(db)
+# def get_species():
+#     term = request.query.get('term')
+#     results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
+#     return dict(species=[dict(id=row.id, name=row.name) for row in results])
 
-@action('submit_checklist', method='POST')
-@action.uses(db, auth.user)
-def submit_checklist():
-    data = request.json
-    checklist_id = db.checklist.insert(
-        user_email=get_user_email(),
-        latitude=data['latitude'],
-        longitude=data['longitude'],
-        observation_date=data['observation_date'],
-        observation_time=data['observation_time'],
-        observation_duration=data['observation_duration']
-    )
-    for sighting in data['sightings']:
-        db.sighting.insert(
-            checklist_id=checklist_id,
-            species_id=sighting['species_id'],
-            species_count=sighting['species_count']
-        )
-    return dict(status='success')
+# @action('submit_checklist', method='POST')
+# @action.uses(db, auth.user)
+# def submit_checklist():
+#     data = request.json
+#     checklist_id = db.checklist.insert(
+#         user_email=get_user_email(),
+#         latitude=data['latitude'],
+#         longitude=data['longitude'],
+#         observation_date=data['observation_date'],
+#         observation_time=data['observation_time'],
+#         observation_duration=data['observation_duration']
+#     )
+#     for sighting in data['sightings']:
+#         db.sighting.insert(
+#             checklist_id=checklist_id,
+#             species_id=sighting['species_id'],
+#             species_count=sighting['species_count']
+#         )
+#     return dict(status='success')

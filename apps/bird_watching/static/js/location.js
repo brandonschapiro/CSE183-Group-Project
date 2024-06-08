@@ -24,6 +24,7 @@ app.data = {
             lat2: window.lat2,
             lng1: window.lng1,
             lng2: window.lng2,
+            loaded: false,
         };
     },
     computed:{
@@ -123,6 +124,7 @@ app.load_data = function () {
         app.vue.sightings = r.data.sightings
         app.vue.unique_sightings = r.data.unique_sightings
         app.vue.top_contributors = r.data.top_contributors
+        app.vue.loaded = true
     })
 
 }

@@ -11,7 +11,7 @@
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
@@ -36,14 +36,14 @@
 
 .column-names {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   font-weight: bold;
 }
 
 .grid-items {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
@@ -58,6 +58,7 @@
 
   <div class='left-section'>
     <h1 class="title"><i class="fa-solid fa-cube"></i>Region Information</h1>
+    <div v-if='loaded'>
     <p>Num checklists: {{checklists.length}} </p>
     <p>Num sightings: {{sightings.length}}</p>
     <h3>Species in Region</h3>
@@ -67,21 +68,30 @@
         </option>
     </select>
     <div><canvas id='chart'></div>
+    </div>
+    <div v-else>
+    <p>Loading chart data...</p>
+    </div>
   </div>
   <div class='right-section'>
+    <div v-if='loaded'>
     <h3 class="title">Top Contributors of Region</h3>
     <div class="grid-container">
       <div class="column-name">Email</div>
       <div class="column-name">Checklists</div>
       <div class="column-name">Sightings</div>
+      <div class="column-name">Species Seen</div>
       <div class="column-name">Birds Seen</div>
       <div v-for='contributor in top_contributors' :key='contributor[0]' class="grid-row">
         <div class="grid-item">{{contributor[0]}}</div>
         <div class="grid-item">{{contributor[1]}}</div>
         <div class="grid-item">{{contributor[2]}}</div>
+        <div class="grid-item">{{contributor[4]}}</div>
         <div class="grid-item">{{contributor[3]}}</div>
       </div>
     </div>
+  </div>
+  <div v-else><p>Loading top contributors...</p></div>
   </div>
 </div>
 
