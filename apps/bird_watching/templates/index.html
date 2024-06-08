@@ -16,6 +16,7 @@
     <div class="column is-two-thirds" id="map"></div>
     <div class="column">
       <h1 class="title"><i class="fa-solid fa-cube"></i> Bird Watching App</h1>
+      
       <div class="buttons">
         <button class="button is-primary" @click="goToSightings">My Birding</button>
         <button class="button is-info" @click="goToChecklist" v-bind:disabled="!marker">Sumbit a checklist</button>
@@ -23,7 +24,9 @@
         <button class="button is-danger" @click="clearTools" v-bind:disabled="!rectangle && !marker">Clear Tools</button>
         <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
       </div>
-      
+
+      <div id="loading-icon" v-if="loading">Loading data...</div>
+
       <div class="field">
         <label class="label">Search Species</label>
         <div class="control">

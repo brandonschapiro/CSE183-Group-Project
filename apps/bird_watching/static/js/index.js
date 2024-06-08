@@ -5,28 +5,30 @@
 let app = {};
 
 function flatten(buffer) {
-    // flatten buffer 
-    let temp = [] 
+    // Flatten buffer
+    let temp = [];
     
     for (let i = 0; i < buffer.length; i++) {
-       temp.push(...buffer[i])
+       temp.push(...buffer[i]);
     }
 
-    return temp; 
+    return temp;
 }
 
-app.data = {    
+app.data = {
     data: function() {
         return {
             map: null,
-            heatMap: null,  
+            heatMap: null,
             rectangle: null,
-            search: '',
             marker: null,
+            bounds: null,
+            checklist: null,
+            loading: true,
+            search: '',
             speciesList: [],
-            buffer: [], // array of arrays,  
             selectedSpecies: [],
-            bounds: null, 
+            buffer: [], // Array of arrays
         };
     },
     computed: {
@@ -38,22 +40,22 @@ app.data = {
     },
     methods: {
         click_listener: function(e) {
-            console.log("clicked on map at", e.latlng);
+            console.log("Clicked on map at", e.latlng);
 
             if (this.rectangle) {
                 this.map.removeLayer(this.rectangle);
-                this.rectangle = null; 
+                this.rectangle = null;
             } else if (this.marker) {
                 
                 this.bounds = [
-                    [this.marker._latlng.lat , this.marker._latlng.lng],
-                    [e.latlng.lat , e.latlng.lng],
+                    [this.marker._latlng.lat, this.marker._latlng.lng],
+                    [e.latlng.lat, e.latlng.lng],
                 ];
 
                 this.rectangle = L.rectangle(this.bounds, {color: "#ff7800", weight: 1});
                 this.rectangle.addTo(this.map);
 
-                this.map.removeLayer(this.marker); 
+                this.map.removeLayer(this.marker);
                 this.marker = null;
             } else {
                 this.marker = new L.Marker([e.latlng.lat, e.latlng.lng]);
@@ -61,75 +63,87 @@ app.data = {
             }
         },
         clearSpecies: function() {
-            console.log("clearSpecies")
-            this.speciesList.push(...this.selectedSpecies); 
-            this.selectedSpecies = []; 
+            console.log("clearSpecies");
+            this.speciesList.push(...this.selectedSpecies);
+            this.speciesList.sort(); 
+            this.selectedSpecies = [];
             this.search = '';
-            this.heatMap.setLatLngs([]); 
-            this.heatMap.redraw(); 
-            this.fetchChecklist(); 
+            this.heatMap.setLatLngs([]);
+            this.heatMap.redraw();
+            this.fetchChecklist();
         },
-        clearTools: function() { 
-            if(this.rectangle) {
-                this.map.removeLayer(this.rectangle)
+        clearTools: function() {
+            if (this.rectangle) {
+                this.map.removeLayer(this.rectangle);
             }
 
-            if(this.marker) {
-                this.map.removeLayer(this.marker); 
+            if (this.marker) {
+                this.map.removeLayer(this.marker);
             }
 
-            this.rectangle = null; 
+            this.rectangle = null;
             this.marker = null;
         },
         fetchSpecies: function() {
-            axios.get(get_species_url).then((response) => {
+
+            return axios.get(get_species_url).then((response) => {
                 this.speciesList = response.data.species;
+                this.speciesList.sort();
             });
         },
         fetchChecklist: function() {
-            axios.get(get_sightings_url, {}).then((response) => {
-                console.log("fetchChecklist response: ", response); 
-                this.updateMap(response.data.sightings); 
-            });
-        }, 
-        selectSpecies(species) {
+            this.loading = true;
+
+            if (this.checklist) {
+                this.updateMap(this.checklist);
+                this.loading = false;
+            } else {
+                return axios.get(get_sightings_url, {}).then((response) => {
+                    console.log("fetchChecklist response: ", response);
+                    this.checklist = response.data.sightings;
+                    this.updateMap(response.data.sightings);
+                });
+            }
+            
+        },
+        selectSpecies: function(species) {
             this.selectedSpecies.push(species);
             this.speciesList = this.speciesList.filter((s) => s.id !== species.id);
             this.search = ''; // Clear the search input
             console.log(species);
-            axios.get(get_sightings_url, { species_id: species.id}).then((response) => {
 
-                console.log("selectSpecies response: ", response); 
-                this.buffer.push(response.data.sightings); // 
-
-                this.updateMap(flatten(this.buffer)); 
+            this.loading = true;
+            axios.get(get_sightings_url, { params: { species_id: species.id } }).then((response) => {
+                console.log("selectSpecies response: ", response);
+                this.buffer.push(response.data.sightings);
+                this.updateMap(flatten(this.buffer));
+                this.loading = false;
             });
-          },
-        deselectSpecies(species) {
-            this.speciesList.push(species);
-            console.log("species", species)
-            const index = this.selectedSpecies.indexOf(species); 
-            console.log("index", index)
-            this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
-            this.buffer.splice(index, 0);
-            this.selectedSpecies.splice(index, 0); 
-            this.updateMap(this.buffer);
         },
-        updateMap: function(sightings) { 
-            let temp = []; 
+        deselectSpecies: function(species) {
+            this.speciesList.push(species);
+            console.log("species", species);
+            const index = this.selectedSpecies.indexOf(species);
+            console.log("index", index);
+            this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
+            this.selectedSpecies.sort(); 
+            this.buffer.splice(index, 1);
+            this.updateMap(flatten(this.buffer));
+        },
+        updateMap: function(sightings) {
+            let temp = [];
             sightings.forEach(sighting => {
-                temp.push([sighting.checklist.latitude, sighting.checklist.longitude, sighting.sighting.species_count])
+                temp.push([sighting.checklist.latitude, sighting.checklist.longitude, sighting.sighting.species_count]);
             });
-            this.heatMap.setLatLngs(temp); 
+            this.heatMap.setLatLngs(temp);
             this.heatMap.redraw();
         },
         goToChecklist: function() {
             if (this.marker != null) {
-                window.location.href = `/bird_watching/checklist?lat=${this.marker._latlng.lat}&lng=${this.marker._latlng.lng}`; 
+                window.location.href = `/bird_watching/checklist?lat=${this.marker._latlng.lat}&lng=${this.marker._latlng.lng}`;
             }
         },
         goToRegion: function() {
-            
             if (this.rectangle != null) {
                 window.location.href = `/bird_watching/location?lat1=${this.bounds[0][0]}&lng1=${this.bounds[0][1]}&lat2=${this.bounds[1][0]}&lng2=${this.bounds[1][1]}`;
             }
@@ -143,7 +157,6 @@ app.data = {
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.init = () => {
-
     navigator.geolocation.getCurrentPosition((userPosition) => {
         console.log("User position", userPosition);
 
@@ -154,11 +167,17 @@ app.init = () => {
         }).addTo(app.vue.map);
     
         app.vue.map.on('click', app.vue.click_listener);
-        app.vue.heatMap = L.heatLayer([], {radius: 25}).addTo(app.vue.map);
+        app.vue.heatMap = L.heatLayer([], { radius: 25 }).addTo(app.vue.map);
         // Fetch initial data
-        app.vue.fetchSpecies();
-        app.vue.fetchChecklist();
-    })
+        app.vue.loading = true;
+        app.vue.fetchSpecies()
+            .then(() => app.vue.fetchChecklist())
+            .finally(() => {
+                // Hide the loading icon
+                console.log("species and checklist loaded");
+                app.vue.loading = false;
+            });
+    });
 };
 
 app.init();

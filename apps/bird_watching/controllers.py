@@ -46,7 +46,6 @@ def index():
         get_sightings_url=URL('get_sightings', signer=url_signer)
     )
 
-
 @action('get_species', method=['GET'])
 @action.uses(db, auth)
 def get_species(path=None):
@@ -55,11 +54,11 @@ def get_species(path=None):
     return dict(species=species)
 
 @action('get_sightings', method=['GET'])
-@action.uses(db)
-def get_sightings():
+@action.uses(db, auth)
+def get_sightings(path=None):
     
     species_id = request.params.get('species_id')
-    
+    print(species_id)
     if species_id:
         query = (db.sighting.species_id == species_id) & (db.sighting.checklist_id == db.checklist.id)
     else:
@@ -271,12 +270,12 @@ def my_callback():
     return dict(my_value=3)
 
 # checklist
-@action('get_species', method='GET')
-@action.uses(db)
-def get_species():
-    term = request.query.get('term')
-    results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
-    return dict(species=[dict(id=row.id, name=row.name) for row in results])
+# @action('get_species', method='GET')
+# @action.uses(db)
+# def get_species():
+#     term = request.query.get('term')
+#     results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
+#     return dict(species=[dict(id=row.id, name=row.name) for row in results])
 
 @action('submit_checklist', method='POST')
 @action.uses(db, auth.user)
