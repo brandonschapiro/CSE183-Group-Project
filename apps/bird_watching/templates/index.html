@@ -19,7 +19,7 @@
       <div class="buttons">
         <button class="button is-primary" @click="goToSightings">My Birding</button>
         <button class="button is-info" @click="goToChecklist" v-bind:disabled="!marker">Sumbit a checklist</button>
-        <button class="button is-warning" @click="statsOnRegion" v-bind:disabled="!rectangle">Statistics on region</button>  
+        <button class="button is-warning" @click="goToRegion" v-bind:disabled="!rectangle">Statistics on region</button>  
         <button class="button is-danger" @click="clearTools" v-bind:disabled="!rectangle && !marker">Clear Tools</button>
         <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
       </div>

@@ -26,6 +26,7 @@ app.data = {
             speciesList: [],
             buffer: [], // array of arrays,  
             selectedSpecies: [],
+            bounds: null, 
         };
     },
     computed: {
@@ -44,12 +45,12 @@ app.data = {
                 this.rectangle = null; 
             } else if (this.marker) {
                 
-                let bounds = [
+                this.bounds = [
                     [this.marker._latlng.lat , this.marker._latlng.lng],
                     [e.latlng.lat , e.latlng.lng],
                 ];
 
-                this.rectangle = L.rectangle(bounds, {color: "#ff7800", weight: 1});
+                this.rectangle = L.rectangle(this.bounds, {color: "#ff7800", weight: 1});
                 this.rectangle.addTo(this.map);
 
                 this.map.removeLayer(this.marker); 
@@ -127,9 +128,10 @@ app.data = {
                 window.location.href = `/bird_watching/checklist?lat=${this.marker._latlng.lat}&lng=${this.marker._latlng.lng}`; 
             }
         },
-        statsOnRegion: function() {
-            if (this.rectangle == null) {
-                window.location.href = `/bird_watching/location?lat1=${this.points[0].latlng.lat}&lng1=${this.points[0].latlng.lng}&lat2=${this.points[1].latlng.lat}&lng2=${this.points[1].latlng.lng}`;
+        goToRegion: function() {
+            
+            if (this.rectangle != null) {
+                window.location.href = `/bird_watching/location?lat1=${this.bounds[0][0]}&lng1=${this.bounds[0][1]}&lat2=${this.bounds[1][0]}&lng2=${this.bounds[1][1]}`;
             }
         },
         goToSightings: function() {
