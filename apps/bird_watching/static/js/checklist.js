@@ -5,19 +5,21 @@ let app = {};
 app.data = {
     data() {
         return {
-            searchTerm: '',
-            speciesResults: [],
-            sightings: [],
-            latitude: null,
-            longitude: null
+            searchTerm: '', // Term to search for species
+            speciesResults: [], // Results from species search
+            sightings: [], // List of species sightings
+            latitude: null, // Latitude for the observation location
+            longitude: null // Longitude for the observation location
         };
     },
     methods: {
+        // Search for species with a debounced function to limit API calls
         searchSpecies: _.debounce(function() {
             axios.get(get_species_url, { params: { term: this.searchTerm }}).then((response) => {
                 this.speciesResults = response.data.species;
             });
         }, 300),
+        // Add a selected species to the sightings list
         addSpecies(species) {
             this.sightings.push({
                 id: species.id,
@@ -27,9 +29,11 @@ app.data = {
             this.speciesResults = [];
             this.searchTerm = '';
         },
+        // Remove a species from the sightings list
         removeSpecies(index) {
             this.sightings.splice(index, 1);
         },
+        // Submit the checklist to the server
         submitChecklist() {
             if (this.latitude === null || this.longitude === null) {
                 alert("Please select a location on the map.");
@@ -53,10 +57,11 @@ app.data = {
         }
     },
     mounted() {
-        // This should be set based on user interaction on the map
+        // Set default location coordinates; ideally, this should be set based on user interaction on the map
         this.latitude = 37.7749;
         this.longitude = -122.4194;
     }
 };
 
+// Initialize Vue app with the specified data and methods
 app.vue = Vue.createApp(app.data).mount("#app");
