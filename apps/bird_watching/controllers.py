@@ -270,13 +270,13 @@ def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
 
-# checklist
-@action('get_species', method='GET')
-@action.uses(db)
-def get_species():
-    term = request.query.get('term')
-    results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
-    return dict(species=[dict(id=row.id, name=row.name) for row in results])
+# # checklist
+# @action('get_species', method='GET')
+# @action.uses(db)
+# def get_species():
+#     term = request.query.get('term')
+#     results = db(db.species.name.like(f'%{term}%')).select(db.species.ALL)
+#     return dict(species=[dict(id=row.id, name=row.name) for row in results])
 
 @action('submit_checklist', method='POST')
 @action.uses(db, auth.user)
