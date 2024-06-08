@@ -68,11 +68,14 @@ def get_sightings(path=None):
     return dict(sightings=sightings)
 
 @action('checklist')
-@action.uses('checklist.html', db, auth, url_signer)
-def index():
+@action.uses('checklist.html', db, auth.user, url_signer)
+def checklist():
     return dict(
-        # COMPLETE: return here any signed URLs you need.
-        my_callback_url = URL('my_callback', signer=url_signer),
+        my_callback_url=URL('my_callback', signer=url_signer),
+        get_species_url=URL('get_species', signer=url_signer),
+        get_checklists_url=URL('get_checklists', signer=url_signer),
+        submit_checklist_url=URL('submit_checklist', signer=url_signer),
+        delete_checklist_url=URL('delete_checklist', signer=url_signer)
     )
 
 
@@ -277,40 +280,36 @@ def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
 
-# @action('get_checklists', method=['GET'])
-# @action.uses(db, auth.user)
-# def get_checklists():
-#     user_email = auth.current_user.get('email')
-#     checklists = db(db.checklist.user_email == user_email).select(
-#         db.checklist.ALL, db.species.name,
-#         join=db.species.on(db.checklist.species_id == db.species.id)
-#     ).as_list()
-#     return dict(checklists=checklists)
+@action('get_checklists', method=['GET'])
+@action.uses(db, auth.user)
+def get_checklists():
+    user_email = get_user_email()
+    checklists = db(db.checklist.user_email == user_email).select().as_list()
+    return dict(checklists=checklists)
 
-# @action('save_checklist', method=['POST'])
-# @action.uses(db, auth.user)
-# def save_checklist():
-#     data = request.json
-#     user_email = auth.current_user.get('email')
-#     if data.get('id'):
-#         db(db.checklist.id == data.get('id')).update(
-#             user_email=user_email,
-#             species_id=data.get('species_id'),
-#             count=data.get('count')
-#         )
-#     else:
-#         db.checklist.insert(
-#             user_email=user_email,
-#             species_id=data.get('species_id'),
-#             count=data.get('count')
-#         )
-#     db.commit()
-#     return "success"
+@action('submit_checklist', method=['POST'])
+@action.uses(db, auth.user)
+def submit_checklist():
+    data = request.json
+    user_email = get_user_email()
+    checklist_id = db.checklist.insert(
+        user_email=user_email,
+        latitude=data['latitude'],
+        longitude=data['longitude'],
+        observation_date=date.today()
+    )
+    for species in data['species']:
+        db.sighting.insert(
+            checklist_id=checklist_id,
+            species_id=species['id'],
+            species_count=species['count']
+        )
+    return dict(success=True)
 
-# @action('delete_checklist', method=['POST'])
-# @action.uses(db, auth.user)
-# def delete_checklist():
-#     data = request.json
-#     db(db.checklist.id == data.get('id')).delete()
-#     db.commit()
-#     return "success"
+@action('delete_checklist', method=['POST'])
+@action.uses(db, auth.user)
+def delete_checklist():
+    checklist_id = request.json.get('id')
+    db(db.checklist.id == checklist_id).delete()
+    db(db.sighting.checklist_id == checklist_id).delete()
+    return dict(success=True)
