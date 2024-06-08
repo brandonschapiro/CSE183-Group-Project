@@ -128,7 +128,13 @@ app.data = {
             this.selectedSpecies = this.selectedSpecies.filter((s) => s.id !== species.id);
             this.selectedSpecies.sort(); 
             this.buffer.splice(index, 1);
-            this.updateMap(flatten(this.buffer));
+
+            if (this.selectedSpecies.length == 0) {
+                this.clearSpecies(); 
+            } else {
+                this.updateMap(flatten(this.buffer));
+            }
+            
         },
         updateMap: function(sightings) {
             let temp = [];
