@@ -24,6 +24,7 @@ app.data = {
             lat2: window.lat2,
             lng1: window.lng1,
             lng2: window.lng2,
+            loaded: false,
         };
     },
     computed:{
@@ -36,6 +37,7 @@ app.data = {
             this.my_value += 1;
         },
         setSpecies: function(){
+          //This function gets the species data that is needed to display the chart 
             console.log('running')
             let dict = {}
             let unique_labels = new Set();
@@ -80,6 +82,7 @@ app.data = {
             console.log('done')
         },
         updateChart: function(chartData){
+          //This function updates the chart after the new data has been collected
             console.log('updating chart')
             let chartLabels = []
             let data = []
@@ -118,11 +121,13 @@ app.data = {
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
+    //Callback for getting checklists / sightings / etc.
     axios.get(get_region_information_url, {params: {lat1:app.vue.lat1,lat2:app.vue.lat2,lng1:app.vue.lng1,lng2:app.vue.lng2}}).then(function(r) {
         app.vue.checklists = r.data.checklists
         app.vue.sightings = r.data.sightings
         app.vue.unique_sightings = r.data.unique_sightings
         app.vue.top_contributors = r.data.top_contributors
+        app.vue.loaded = true
     })
 
 }

@@ -4,49 +4,69 @@
 [v-cloak] {
      display: none;
 }
+.table-container {
+    overflow-x: auto;
+}
 </style>
 
 <div class="section" id="app" v-cloak>
-  <!-- Page title with an icon -->
-  <h1 class="title"><i class="fa-solid fa-cube"></i> Checklist Page</h1>
-  <div>
-    <!-- Search input for species -->
-    <input v-model="searchTerm" @input="searchSpecies" placeholder="Search for species">
-    <ul>
-      <!-- List of species results from search -->
-      <li v-for="species in speciesResults" @click="addSpecies(species)">
-        {{ species.name }}
-      </li>
-    </ul>
+  <h1 class="title">Checklist</h1>
+  <div class="field">
+    <label class="label">Search Species</label>
+    <div class="control">
+      <input class="input" type="text" placeholder="Search species" v-model="search">
+    </div>
   </div>
-  <table>
-    <!-- Table of species sightings -->
-    <tr v-for="(sighting, index) in sightings">
-      <td>{{ sighting.name }}</td>
-      <td>
-        <!-- Input for species count -->
-        <input type="number" v-model="sighting.species_count" min="1">
-      </td>
-      <td>
-        <!-- Button to increment species count -->
-        <button @click="incrementCount(index)">+</button>
-      </td>
-      <td>
-        <!-- Button to remove species from sightings -->
-        <button @click="removeSpecies(index)">Remove</button>
-      </td>
-    </tr>
-  </table>
-  <!-- Button to submit the checklist -->
-  <button @click="submitChecklist">Submit Checklist</button>
+  <div class="table-container">
+    <table class="table is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Species</th>
+          <th>Count</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="species in filteredSpecies" :key="species.id">
+          <td>{{ species.name }}</td>
+          <td><input class="input" type="number" v-model.number="species.count"></td>
+          <td><button class="button is-success" @click="incrementCount(species)">+</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="buttons">
+    <button class="button is-primary" @click="submitChecklist">Submit</button>
+  </div>
+  <h2 class="title">My Checklists</h2>
+  <div class="table-container">
+    <table class="table is-fullwidth is-striped">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="checklist in checklists" :key="checklist.id">
+          <td>{{ checklist.observation_date }}</td>
+          <td>
+            <button class="button is-info" @click="editChecklist(checklist)">Edit</button>
+            <button class="button is-danger" @click="deleteChecklist(checklist.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 [[block page_scripts]]
 <script>
-  // URLs for API endpoints
-  let get_species_url = "[[=URL('get_species')]]";
-  let submit_checklist_url = "[[=URL('submit_checklist')]]";
+  let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_species_url = "[[=XML(get_species_url)]]";
+  let get_checklists_url = "[[=XML(get_checklists_url)]]";
+  let submit_checklist_url = "[[=XML(submit_checklist_url)]]";
+  let delete_checklist_url = "[[=XML(delete_checklist_url)]]";
 </script>
-<!-- Import the checklist.js script -->
 <script src="js/checklist.js"></script>
 [[end]]
