@@ -193,6 +193,7 @@ def location():
 @action('get_region_information', method='GET')
 @action.uses(db, auth.user)
 def get_region_information():
+    #queries checklist table by latitude and longitude coordinates provided from index page
     lat1 = request.query.get('lat1')
     lat2 = request.query.get('lat2')
     lng1 = request.query.get('lng1')
@@ -213,13 +214,14 @@ def get_region_information():
     unique_sighting_ids = set()
     unique_sightings = []
     sightings_dict = defaultdict(list)
-    #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 time contributing (maybe later) - possibly add a time sighting in region statistic or like a first checklist in region date
+    #each list in top_contributors has 4 values that are kept track of, defined below
+    #0 - checklist count, 1 - sightings count, 2 total species sighted, 3 unique species sighted
     top_contributors = defaultdict(list)
     contributor_species = defaultdict(set)
     all_sightings = db(db.sighting).select(left=db.species.on(db.sighting.species_id == db.species.id))
     for sight in all_sightings:
         sightings_dict[sight.sighting.checklist_id].append(sight)
-
+    #Going through checklists and gathering required information
     for checklist in checklists:
         sightings = sightings_dict[checklist.id]
         checklist_data = {
@@ -244,10 +246,13 @@ def get_region_information():
                 "species_count":sighting.sighting.species_count,
                 "date":checklist.observation_date,
             }
+            #Update top contributor information
             top_contributors[checklist.user_email][1] += 1
             top_contributors[checklist.user_email][2] += sighting.sighting.species_count
             contributor_species[checklist.user_email].add(sighting.species.name)
             top_contributors[checklist.user_email][3] = len(contributor_species[checklist.user_email])
+            
+    #Lots of stuff here but basically just processing data to be sent to frontend, not sure if done in the most efficient way but it works at least        
             sightings_list.append(sighting_data)
             if(sighting.species.id not in unique_sighting_ids):
                 unique_sighting_ids.add(sighting.species.id)

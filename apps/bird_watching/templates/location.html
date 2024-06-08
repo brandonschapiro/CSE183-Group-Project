@@ -59,9 +59,9 @@
   <div class='left-section'>
     <h1 class="title"><i class="fa-solid fa-cube"></i>Region Information</h1>
     <div v-if='loaded'>
-    <p>Num checklists: {{checklists.length}} </p>
-    <p>Num sightings: {{sightings.length}}</p>
-    <h3>Species in Region</h3>
+    <p>Checklists Across Region: {{checklists.length}} </p>
+    <p>Total Number of Sightings: {{sightings.length}}</p>
+    <h3>Get Species Sighting Info</h3>
     <select v-model="selectedSpecies" @change="setSpecies">
         <option v-for="sighting in unique_sightings" :key="sighting.id" :value="sighting">
           {{ sighting.name }}
@@ -70,7 +70,7 @@
     <div><canvas id='chart'></div>
     </div>
     <div v-else>
-    <p>Loading chart data...</p>
+    <p>Loading data...</p>
     </div>
   </div>
   <div class='right-section'>
@@ -91,7 +91,6 @@
       </div>
     </div>
   </div>
-  <div v-else><p>Loading top contributors...</p></div>
   </div>
 </div>
 
