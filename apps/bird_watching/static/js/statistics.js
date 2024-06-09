@@ -69,7 +69,10 @@ renderChart(labels, data) {
                             size: 14 // Adjust the size as needed
                         },
                         color: 'black'
-                    }
+                    },
+                    ticks: {
+                      color: 'white' // Change tick color to white
+                  }
                 },
                 x: {
                     title: {
@@ -80,8 +83,13 @@ renderChart(labels, data) {
                             size: 14 // Adjust the size as needed
                         },
                         color: 'black'
-                    }
+                    },
+                    ticks: {
+                      color: 'white' // Change tick color to white
+                  }
+                    
                 }
+                
             },
             width: 800,
             height: 600,
@@ -113,31 +121,54 @@ renderChart(labels, data) {
   
   
   initializeMap(speciesIndex) {
-    const dates = this.species_dates[Object.keys(this.species_dates)[speciesIndex]];
+    const dates = this.filteredSpeciesDates[Object.keys(this.filteredSpeciesDates)[speciesIndex]];
     const mapId = 'map-' + speciesIndex;
+    const mapContainer = document.getElementById(mapId);
+    mapContainer.innerHTML = ''; // Clear existing map content
+  
     const map = L.map(mapId).setView([0, 0], 2); // Set initial view
-
+  
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-
+  
     dates.forEach(sighting => {
       const lat = sighting.latitude;
       const lon = sighting.longitude;
       L.marker([lat, lon]).addTo(map);
     });
-
+  
     if (dates.length > 0) {
       const latLngBounds = dates.map(sighting => [sighting.latitude, sighting.longitude]);
       map.fitBounds(latLngBounds);
     }
+  },
+  
+  // Watch for changes in filteredSpeciesDates and update maps
+  watch: {
+    filteredSpeciesDates: {
+      handler(newValue, oldValue) {
+        // Close all cards when filtered data changes
+        this.isVisible = {};
+  
+        // Reinitialize maps
+        for (const speciesIndex in this.species_dates) {
+          this.initializeMap(speciesIndex);
+        }
+      },
+      deep: true // Watch for nested changes
+    }
   }
+  
 };
 
+// Define Vue computed properties
 // Define Vue computed properties
 app.computed = {
   filteredSpeciesDates() {
     const speciesDatesToUse = this.sortedSpeciesDates || this.species_dates;
+    // Reset isVisible object when searchTerm changes
+    this.isVisible = {};
     // Filter species based on the search term
     if (!this.searchTerm) {
       return speciesDatesToUse;
@@ -150,6 +181,7 @@ app.computed = {
     );
   }
 };
+
 
 // Create and mount the Vue app
 app.vue = Vue.createApp({
