@@ -1,14 +1,15 @@
 [[extend 'layout.html']]
 
+<link rel="stylesheet" href="https://unpkg.com/bulma/css/bulma.min.css">
+
 <style>
 [v-cloak] {
-     display: none;
-     
+    display: none;
 }
 .section {
-  display: flex;
+    display: flex;
+    padding: 20px;
 }
-
 .grid-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -16,30 +17,22 @@
 }
 
 .column-name {
-  font-weight: bold;
+    font-weight: bold;
+    background-color: #00d1b2; /* Turquoise background */
+    padding: 10px;
+    text-align: center;
+    color: white;
 }
-
 .grid-row {
   display: contents;
 }
 
 .grid-item {
   padding: 10px;
-  background-color: #f1f1f1;
+  background-color: #777373;
+  color: white;
 }
 
-
-.left-section {
-  flex: 2;
-  padding-right: 20px;
-}
-
-.column-names {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  font-weight: bold;
-}
 
 .grid-items {
   display: grid;
@@ -47,30 +40,49 @@
   gap: 10px;
 }
 
+.left-section {
+    flex: 2;
+    padding-right: 20px;
+}
 .right-section {
-  flex: 1;
+    flex: 1;
+}
+.stat-box {
+    background-color: #3273dc;
+    color: white;
+    padding: 10px; /* Reduced padding */
+    border-radius: 8px;
+    margin-top: 10px; /* Increased margin-bottom for space */
+}
+.stat-title {
+    font-size: 1.2em; /* Reduced font size */
+    font-weight: bold;
+}
+.stat-value {
+    font-size: 1.5em; /* Reduced font size */
 }
 </style>
 
-
 <div class="section" id="app" v-cloak>
-  <!-- Put here your Vue.js template -->
-
-  <div class='left-section'>
-    <h1 class="title"><i class="fa-solid fa-cube"></i>Region Information</h1>
-    <div v-if='loaded'>
-    <p>Checklists Across Region: {{checklists.length}} </p>
-    <p>Total Number of Sightings: {{sightings.length}}</p>
-    <h3>Get Species Sighting Info</h3>
-    <select v-model="selectedSpecies" @change="setSpecies">
-        <option v-for="sighting in unique_sightings" :key="sighting.id" :value="sighting">
-          {{ sighting.name }}
-        </option>
-    </select>
-    <div><canvas id='chart'></div>
+  <div class="left-section">
+    <h1 class="title"><i class="fas fa-search-location"></i> Region Information</h1>
+    <div v-if="loaded">
+      <h3 class="subtitle is-3 has-text-white ">Get Species Sighting Info</h3>
+      <div class="field">
+        <div class="control">
+          <div class="select is-fullwidth is-info">
+            <select v-model="selectedSpecies" @change="setSpecies">
+              <option v-for="sighting in unique_sightings" :key="sighting.id" :value="sighting">
+                {{ sighting.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div><canvas id="chart"></canvas></div>
     </div>
     <div v-else>
-    <p>Loading data...</p>
+      <p>Loading data...</p>
     </div>
   </div>
   <div class='right-section'>
@@ -91,13 +103,19 @@
       </div>
     </div>
   </div>
+  <div class="stat-box">
+    <div class="stat-title">Checklists Across Region</div>
+    <div class="stat-value">{{ checklists.length }}</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-title">Total Number of Sightings</div>
+    <div class="stat-value">{{ sightings.length }}</div>
+  </div>
   </div>
 </div>
 
-
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
-
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
   let get_region_information_url = "[[=XML(get_region_information_url)]]";
@@ -105,17 +123,13 @@
   window.lat2 = "[[=XML(lat2)]]";
   window.lng1 = "[[=XML(lng1)]]";
   window.lng2 = "[[=XML(lng2)]]";
-  console.log(lat1)
+  console.log(lat1);
 </script>
 
 <div>
   <canvas id="myChart"></canvas>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
 <script src="js/location.js"></script>
-
 [[end]]
