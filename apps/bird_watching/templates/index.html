@@ -1,25 +1,155 @@
 [[extend 'layout.html']]
 
+<link rel="stylesheet" href="https://unpkg.com/bulma/css/bulma.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""/>
 
 <style>
 [v-cloak] {
-     display: none;
+    display: none;
 }
-#map { height: 100vh; }
+#map { 
+    height: 100vh; 
+}
+
+.scrollable-container {
+    max-height: 340px;
+    overflow-y: auto;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+}
+
+.section {
+    padding: 20px;
+}
+
+.columns {
+    display: flex;
+}
+
+.column {
+    padding: 10px;
+}
+
+.column.is-two-thirds {
+    flex: 2;
+}
+
+.column:not(.is-two-thirds) {
+    flex: 1;
+}
+
+.title {
+    font-size: 1.5em;
+    color: #fff; /* Change text color to white */
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.title i {
+    margin-right: 10px;
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.button {
+    flex: 1;
+    margin-bottom: 5px;
+}
+
+#loading-icon {
+    margin: 20px 0;
+    text-align: center;
+    color: #20ff84;
+    font-size: 1.2em;
+}
+
+.field {
+    margin-top: 20px;
+}
+
+.label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    background-color: #fff; /* Make search bar white */
+}
+
+.box {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #333; /* Dark gray background for scrollable container */
+    color: #fff; /* White text in scrollable container */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.species-item {
+    display: block;
+    padding: 5px 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #444; /* Dark gray background for list items */
+}
+
+.species-item.is-info {
+    background-color: #209cee;
+    color: white;
+}
+
+.species-item.is-active {
+    background-color: #726f6f; /* Light gray background */
+    color: #fff9f9; /* Darker text color for better readability */
+}
+.stat-box {
+    background-color: #3273dc;
+    color: white;
+    padding: 10px; /* Reduced padding */
+    border-radius: 8px;
+    margin-bottom: 15px; /* Reduced margin */
+}
+
+.stat-title {
+    font-size: 1.2em; /* Reduced font size */
+    font-weight: bold;
+}
+
+.stat-value {
+    font-size: 1.5em; /* Reduced font size */
+}
+
+.input::placeholder {
+    color: black; /* Make the placeholder text black */
+}
 </style>
 
 <div class="section" id="app" v-cloak>
   <div class="columns">
     <div class="column is-two-thirds" id="map"></div>
     <div class="column">
-      <h1 class="title"><i class="fa-solid fa-cube"></i> Bird Watching App</h1>
+      <h1 class="title"><i class="fas fa-dove"></i> Bird Watching App</h1>
+
       
       <div class="buttons">
         <button class="button is-primary" @click="goToSightings">My Birding</button>
-        <button class="button is-info" @click="goToChecklist" v-bind:disabled="!marker">Sumbit a checklist</button>
+        <button class="button is-info" @click="goToChecklist" v-bind:disabled="!marker">Submit a checklist</button>
         <button class="button is-warning" @click="goToRegion" v-bind:disabled="!rectangle">Statistics on region</button>  
         <button class="button is-danger" @click="clearTools" v-bind:disabled="!rectangle && !marker">Clear Tools</button>
         <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
@@ -28,7 +158,6 @@
       <div id="loading-icon" v-if="loading">Loading data...</div>
 
       <div class="field">
-        <label class="label">Search Species</label>
         <div class="control">
           <input
             class="input"
@@ -36,25 +165,27 @@
             placeholder="Search species"
             v-model="search"
           />
-          <div class="box">
-            <ul>
-              <li
-                v-for="species in selectedSpecies"
-                :key="species.id"
-                @click="deselectSpecies(species)"
-                class="species-item is-info button"
-              >
-                {{ species.name }}
-              </li>
-            </ul>
-          </div>
-          <div class="box">
+          <div class="box scrollable-container">
+            <p class="has-text-weight-bold">View Heatmap</p>
             <ul>
               <li
                 v-for="species in filteredSpecies"
                 :key="species.id"
                 @click="selectSpecies(species)"
-                class="species-item is-active button"
+                class="species-item is-active"
+              >
+                {{ species.name }}
+              </li>
+            </ul>
+          </div>
+          <div class="box scrollable-container" v-if="selectedSpecies.length">
+            <p class="has-text-weight-bold">Currently Viewing</p>
+            <ul>
+              <li
+                v-for="species in selectedSpecies"
+                :key="species.id"
+                @click="deselectSpecies(species)"
+                class="species-item is-info"
               >
                 {{ species.name }}
               </li>

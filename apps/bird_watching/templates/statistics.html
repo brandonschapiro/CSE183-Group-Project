@@ -1,15 +1,19 @@
 [[extend 'layout.html']]
-
 <style>
   [v-cloak] {
     display: none;
+  }
+
+  html {
+    background-color: #000; /* black background */
+    color: #fff; /* white text color */
   }
 
   .card-content {
     position: relative;
     padding: 20px;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    background-color: #cccccc;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
@@ -26,7 +30,7 @@
     height: 78vh;
     border-radius: 8px;
     overflow: hidden;
-    background-color: #fff;
+    background-color: #706d6d;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
@@ -38,12 +42,12 @@
   .title {
     font-size: 2rem;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: #fffbfb;
   }
 
   .label {
     font-weight: bold;
-    color: #555;
+    color: #ffffff;
   }
 
   .input,
@@ -51,7 +55,7 @@
     width: 100%;
     padding: 10px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #ffffff;
     background-color: #f4f4f4;
     font-size: 1rem;
     margin-bottom: 1rem;
@@ -78,17 +82,38 @@
 
   ul li {
     margin-bottom: 5px;
-    color: #666;
+    color: #0e0b0b;
   }
-  .scrollable-container {
-  max-height: 500px; /* Adjust height as needed */
-  overflow-y: auto;
-}
 
+  .scrollable-container {
+    max-height: 500px; /* Adjust height as needed */
+    overflow-y: auto;
+  }
+
+  .field .select select {
+    background-color: #000; /* Change background color to black */
+    color: #a8a8a8; /* Text color */
+    border: 1px solid #222222; /* Border color */
+    border-radius: 6px; /* Border radius */
+    padding: 10px; /* Padding */
+    font-size: 1rem; /* Font size */
+    width: 100%; /* Width */
+  }
+    /* Target the footer by class */
+    .footer {
+    background-color: #000;
+  }
+
+  /* Target the footer by ID */
+  #footer {
+    background-color: #000;
+  }
 </style>
 
+
+
 <div class="section" id="app" v-cloak>
-  <h1 class="title"><i class="fa-solid fa-cube"></i> User Statistics </h1>
+  <h1 class="title"><i class="fas fa-chart-line "></i> User Statistics </h1>
   <div class="container">
     <div class="columns">
       <!-- Main column -->
@@ -102,7 +127,7 @@
 
           <!-- Search bar -->
           <div class="field">
-            <label class="subtitle is-2">Search for a species</label>
+            <label class="subtitle is-2 has-text-white">Search for a species</label>
             <div class="control">
               <input class="input" type="text" placeholder="Search..." v-model="searchTerm">
             </div>
