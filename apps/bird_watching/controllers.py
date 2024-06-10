@@ -141,6 +141,7 @@ def get_user_statistics():
     unique_species_data = db(query).select(
         db.species.id,
         db.species.name,
+        db.sighting.species_count,
         db.checklist.observation_date,
         db.checklist.latitude,
         db.checklist.longitude,
@@ -156,6 +157,7 @@ def get_user_statistics():
 
     for row in unique_species_data:
         species_name = row.species.name
+        count = row.sighting.species_count
         observation_date = row.checklist.observation_date
         date_str = observation_date.strftime('%Y-%m-%d')  # Convert date to string
         latitude = row.checklist.latitude
@@ -166,9 +168,9 @@ def get_user_statistics():
             'longitude': longitude
         })
         if date_str in sightings_count:
-            sightings_count[date_str] += 1
+            sightings_count[date_str] += count
         else:
-            sightings_count[date_str] = 1
+            sightings_count[date_str] = count
     
     species_dates = dict(species_dates)  # Convert defaultdict to a regular dict for JSON serialization
     return dict(
