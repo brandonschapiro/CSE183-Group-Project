@@ -65,7 +65,7 @@ app.methods = {
       data: {
         labels: formattedLabels,
         datasets: [{
-          label: 'Checklist Count',
+          label: 'Sigthings Count',
           data: data,
           backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
           borderColor: 'rgba(255, 99, 132, 1)', // Red color
@@ -80,7 +80,7 @@ app.methods = {
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Number of Checklists',
+              text: 'Number of Sightings',
               padding: {
                 top: 20 // Adjust the top padding as needed
               },
