@@ -1,66 +1,190 @@
 [[extend 'layout.html']]
 
+<link rel="stylesheet" href="https://unpkg.com/bulma/css/bulma.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
 <style>
 [v-cloak] {
-     display: none;
+    display: none;
+}
+.section {
+    padding: 20px;
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.button {
+    flex: 1;
+    margin-bottom: 5px;
+}
+
+.title {
+    font-size: 1.5em;
+    color: #fff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.title i {
+    margin-right: 10px;
+}
+
+.field {
+    margin-top: 20px;
+}
+
+.label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input {
+    border: 1px solid #616161;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    background-color: #1f1d1d;
 }
 .table-container {
     overflow-x: auto;
 }
-</style>
 
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 8px;
+    border-bottom: 1px solid #535252;
+    text-align: left;
+}
+
+.table th {
+    background-color: #000;
+    color: #fff; /* White text */
+}
+
+.table.is-striped tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table.is-fullwidth {
+    width: 100%;
+}
+
+#loading-icon {
+    margin: 20px 0;
+    text-align: center;
+    color: #20ff84;
+    font-size: 1.2em;
+}
+
+.box {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.scrollable-container {
+    max-height: 650px;
+    overflow-y: auto;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #000; /* Black background */
+    color: #fff; /* White text */
+}
+
+.species-item {
+    display: block;
+    padding: 5px 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #444;
+}
+
+.species-item.is-info {
+    background-color: #209cee;
+    color: white;
+}
+
+.species-item.is-active {
+    background-color: #726f6f;
+    color: #fff9f9;
+}
+</style>
 <div class="section" id="app" v-cloak>
-  <h1 class="title">Checklist</h1>
-  <div class="field">
-    <label class="label">Search Species</label>
-    <div class="control">
-      <input class="input" type="text" placeholder="Search species" v-model="search">
+  <div class="columns">
+    <div class="column is-two-thirds">
+      <h1 class="title"><i class="fas fa-check-to-slot"></i> Checklist </h1>
+      <div class="field">
+        <div class="control">
+          <input class="input" type="text" placeholder="Search species" v-model="search">
+        </div>
+      </div>
+      <div class="table-container box scrollable-container">
+        <table class="table is-fullwidth is-striped">
+          <thead>
+            <tr>
+              <th style="background-color: black; color: white;">Species</th>
+              <th style="background-color: black; color: white;">Count</th>
+              <th style="background-color: black; color: white;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="species in filteredSpecies" :key="species.id">
+              <td>{{ species.name }}</td>
+              <td><input class="input" type="number" v-model.number="species.count"></td>
+              <td><button class="button is-success" @click="incrementCount(species)">+</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="buttons">
+        <button class="button is-primary" @click="submitChecklist">Submit</button>
+      </div>
     </div>
-  </div>
-  <div class="table-container">
-    <table class="table is-fullwidth is-striped">
-      <thead>
-        <tr>
-          <th>Species</th>
-          <th>Count</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="species in filteredSpecies" :key="species.id">
-          <td>{{ species.name }}</td>
-          <td><input class="input" type="number" v-model.number="species.count"></td>
-          <td><button class="button is-success" @click="incrementCount(species)">+</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="buttons">
-    <button class="button is-primary" @click="submitChecklist">Submit</button>
-  </div>
-  <h2 class="title">My Checklists</h2>
-  <div class="table-container">
-    <table class="table is-fullwidth is-striped">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="checklist in checklists" :key="checklist.id">
-          <td>{{ checklist.observation_date }}</td>
-          <td>
-            <button class="button is-info" @click="editChecklist(checklist)">Edit</button>
-            <button class="button is-danger" @click="deleteChecklist(checklist.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="column">
+      <h2 class="title"> <i class="fas fa-user"></i>My Checklists</h2>
+      <div class="table-container box scrollable-container">
+        <table class="table is-fullwidth is-striped">
+          <thead>
+            <tr>
+              <th style="background-color: black; color: white;">Date</th>
+              <th style="background-color: black; color: white;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="checklist in checklists" :key="checklist.id">
+              <td>{{ checklist.observation_date }}</td>
+              <td>
+                <button class="button is-info" @click="editChecklist(checklist)">Edit</button>
+                <button class="button is-danger" @click="deleteChecklist(checklist.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
 [[block page_scripts]]
+<!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
   let get_species_url = "[[=XML(get_species_url)]]";
