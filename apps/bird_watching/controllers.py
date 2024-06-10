@@ -70,13 +70,17 @@ def get_sightings(path=None):
 @action('checklist')
 @action.uses('checklist.html', db, auth.user, url_signer)
 def checklist():
+    checklist_id = request.params.get('checklist_id')
     return dict(
         my_callback_url=URL('my_callback', signer=url_signer),
         get_species_url=URL('get_species', signer=url_signer),
         get_checklists_url=URL('get_checklists', signer=url_signer),
+        get_checklist_url=URL('get_checklist', signer=url_signer),
         submit_checklist_url=URL('submit_checklist', signer=url_signer),
-        delete_checklist_url=URL('delete_checklist', signer=url_signer)
+        delete_checklist_url=URL('delete_checklist', signer=url_signer),
+        checklist_id=checklist_id
     )
+
 
 
 @action('statistics')
@@ -279,6 +283,24 @@ def get_region_information():
 def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
+
+@action('get_checklist', method=['GET'])
+@action.uses(db, auth.user)
+def get_checklist():
+    checklist_id = request.params.get('checklist_id')
+    if not checklist_id:
+        abort(400, "No checklist_id provided")
+    
+    checklist = db(db.checklist.id == checklist_id).select().first()
+    if not checklist:
+        abort(404, "Checklist not found")
+    
+    sightings = db(db.sighting.checklist_id == checklist_id).select().as_list()
+    return dict(
+        checklist=checklist.as_dict(),
+        sightings=sightings
+    )
+
 
 @action('get_checklists', method=['GET'])
 @action.uses(db, auth.user)
