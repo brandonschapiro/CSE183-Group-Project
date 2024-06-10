@@ -29,78 +29,97 @@ app.methods = {
     }
   },
   formatDate(dateString) {
-    var date = new Date(dateString);
-    var month = (date.getMonth() + 1).toString().padStart(2, '0');
-    var day = date.getDate().toString().padStart(2, '0');
-    var year = date.getFullYear();
-    return month + '/' + day + '/' + year;
-},
-renderChart(labels, data) {
+    console.log("Original dateString:", dateString);
+  
+    // Manually parse the date string as local date
+    var parts = dateString.split('-');
+    var year = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10) - 1; // Months are zero-based
+    var day = parseInt(parts[2], 10);
+  
+    // Create a new Date object with local date components
+    var date = new Date(year, month, day);
+    console.log("Date object:", date);
+  
+    // Extract the date components
+    var formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+    var formattedDay = date.getDate().toString().padStart(2, '0');
+    var formattedYear = date.getFullYear();
+  
+    // Return the formatted date string
+    var formattedDate = formattedMonth + '/' + formattedDay + '/' + formattedYear;
+    console.log("Formatted date string:", formattedDate);
+  
+    return formattedDate;
+  },
+  
+  renderChart(labels, data) {
     // Format the labels to mm/dd/yyyy
+    console.log("Original labels:", labels);
     var formattedLabels = labels.map(this.formatDate);
-
+    console.log("Formatted labels:", formattedLabels);
+  
     var ctx = document.getElementById('sightingsChart').getContext('2d');
     new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: formattedLabels,
-            datasets: [{
-                label: 'Sightings Count',
-                data: data,
-                backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
-                borderColor: 'rgba(255, 99, 132, 1)', // Red color
-                borderWidth: 1
-            }]
-        },
-        options: {
-            maintainAspectRatio: false, // Disable aspect ratio
-            responsive: true, // Make the chart responsive
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Sightings',
-                        padding: {
-                            top: 20 // Adjust the top padding as needed
-                        },
-                        font: {
-                            weight: 'bold', // Make the text bold
-                            size: 14 // Adjust the size as needed
-                        },
-                        color: 'black'
-                    },
-                    ticks: {
-                      color: 'white' // Change tick color to white
-                  }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Dates Observed',
-                        font: {
-                            weight: 'bold', // Make the text bold
-                            size: 14 // Adjust the size as needed
-                        },
-                        color: 'black'
-                    },
-                    ticks: {
-                      color: 'white' // Change tick color to white
-                  }
-                    
-                }
-                
+      type: 'line',
+      data: {
+        labels: formattedLabels,
+        datasets: [{
+          label: 'Checklist Count',
+          data: data,
+          backgroundColor: 'rgba(255, 99, 132, 0.2)', // Red color with 20% opacity
+          borderColor: 'rgba(255, 99, 132, 1)', // Red color
+          borderWidth: 1
+        }]
+      },
+      options: {
+        maintainAspectRatio: false, // Disable aspect ratio
+        responsive: true, // Make the chart responsive
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Checklists',
+              padding: {
+                top: 20 // Adjust the top padding as needed
+              },
+              font: {
+                weight: 'bold', // Make the text bold
+                size: 14 // Adjust the size as needed
+              },
+              color: 'black'
             },
-            width: 800,
-            height: 600,
-            plugins: {
-                legend: {
-                    display: false // Hide legend
-                }
+            ticks: {
+              color: 'white' // Change tick color to white
             }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Dates Observed',
+              font: {
+                weight: 'bold', // Make the text bold
+                size: 14 // Adjust the size as needed
+              },
+              color: 'black'
+            },
+            ticks: {
+              color: 'white' // Change tick color to white
+            }
+          }
+        },
+        width: 800,
+        height: 600,
+        plugins: {
+          legend: {
+            display: false // Hide legend
+          }
         }
+      }
     });
-},
+  },
+  
 
   sortSightings() {
     const order = this.sortOrder;
@@ -221,6 +240,7 @@ app.load_data = function() {
         acc[index] = false;
         return acc;
       }, {});
+      console.log(app.vue.sightings_count)
 
       // Render the chart
       app.vue.renderChart(labels, data);
