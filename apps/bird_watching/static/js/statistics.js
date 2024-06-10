@@ -29,7 +29,6 @@ app.methods = {
     }
   },
   formatDate(dateString) {
-    console.log("Original dateString:", dateString);
   
     // Manually parse the date string as local date
     var parts = dateString.split('-');
@@ -39,7 +38,6 @@ app.methods = {
   
     // Create a new Date object with local date components
     var date = new Date(year, month, day);
-    console.log("Date object:", date);
   
     // Extract the date components
     var formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -48,16 +46,12 @@ app.methods = {
   
     // Return the formatted date string
     var formattedDate = formattedMonth + '/' + formattedDay + '/' + formattedYear;
-    console.log("Formatted date string:", formattedDate);
-  
     return formattedDate;
   },
   
   renderChart(labels, data) {
     // Format the labels to mm/dd/yyyy
-    console.log("Original labels:", labels);
     var formattedLabels = labels.map(this.formatDate);
-    console.log("Formatted labels:", formattedLabels);
   
     var ctx = document.getElementById('sightingsChart').getContext('2d');
     new Chart(ctx, {
@@ -120,24 +114,25 @@ app.methods = {
     });
   },
   
-
   sortSightings() {
     const order = this.sortOrder;
-    // Close all cards
-    this.isVisible = {};
+    console.log("Sort Order:", order); // Log the sort order
+  
     if (!order) {
       this.sortedSpeciesDates = null;
     } else {
       this.sortedSpeciesDates = Object.fromEntries(
-        Object.entries(this.species_dates).sort(([, datesA], [, datesB]) => {
-          const dateA = new Date(datesA[0].date);
-          const dateB = new Date(datesB[0].date);
-          return order === 'earliest' ? dateA - dateB : dateB - dateA;
+        Object.entries(this.species_dates).sort(([speciesA, datesA], [speciesB, datesB]) => {
+          const newestDateA = new Date(Math.max(...datesA.map(d => new Date(d.date))));
+          const newestDateB = new Date(Math.max(...datesB.map(d => new Date(d.date))));
+  
+          return order === 'earliest' ? newestDateA - newestDateB : newestDateB - newestDateA;
         })
       );
+      console.log("Sorted Species Dates:", this.sortedSpeciesDates); // Log the sorted species dates
     }
-  },
-  
+  }
+  ,
   
   initializeMap(speciesIndex) {
     const dates = this.filteredSpeciesDates[Object.keys(this.filteredSpeciesDates)[speciesIndex]];
@@ -182,10 +177,10 @@ app.methods = {
 };
 
 // Define Vue computed properties
-// Define Vue computed properties
 app.computed = {
   filteredSpeciesDates() {
     const speciesDatesToUse = this.sortedSpeciesDates || this.species_dates;
+    console.log("Filtered Species Dates:", speciesDatesToUse); // Log the filtered species dates
     // Reset isVisible object when searchTerm changes
     this.isVisible = {};
     // Filter species based on the search term
@@ -200,7 +195,6 @@ app.computed = {
     );
   }
 };
-
 
 // Create and mount the Vue app
 app.vue = Vue.createApp({
@@ -240,7 +234,8 @@ app.load_data = function() {
         acc[index] = false;
         return acc;
       }, {});
-      console.log(app.vue.sightings_count)
+
+      console.log("Loaded species_dates:", app.vue.species_dates); // Log the loaded species dates
 
       // Render the chart
       app.vue.renderChart(labels, data);
