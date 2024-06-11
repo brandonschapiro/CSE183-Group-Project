@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <style>
 [v-cloak] {
@@ -72,6 +73,13 @@
     text-align: center;
     color: #20ff84;
     font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#loading-icon .icon {
+    margin-right: 10px;
 }
 
 .field {
@@ -155,7 +163,12 @@
         <button class="button is-danger" @click="clearSpecies" v-bind:disabled="selectedSpecies.length == 0">Clear Species</button>
       </div>
 
-      <div id="loading-icon" v-if="loading">Loading data...</div>
+      <div id="loading-icon" v-if="loading">
+        <span class="icon is-large">
+          <i class="fas fa-spinner fa-pulse"></i>
+        </span>
+        <span>Loading data...</span>
+      </div>
 
       <div class="field">
         <div class="control">

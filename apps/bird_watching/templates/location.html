@@ -1,6 +1,7 @@
 [[extend 'layout.html']]
 
 <link rel="stylesheet" href="https://unpkg.com/bulma/css/bulma.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 <style>
 [v-cloak] {
@@ -61,6 +62,20 @@
 .stat-value {
     font-size: 1.5em; /* Reduced font size */
 }
+
+#loading-icon {
+    margin: 20px 0;
+    text-align: center;
+    color: #20ff84;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#loading-icon .icon {
+    margin-right: 10px;
+}
 </style>
 
 <div class="section" id="app" v-cloak>
@@ -81,36 +96,39 @@
       </div>
       <div><canvas id="chart"></canvas></div>
     </div>
-    <div v-else>
-      <p>Loading data...</p>
+    <div v-else id="loading-icon">
+      <span class="icon is-large">
+        <i class="fas fa-spinner fa-pulse"></i>
+      </span>
+      <span>Generating Region Statistics...</span>
     </div>
   </div>
   <div class='right-section'>
     <div v-if='loaded'>
-    <h3 class="title">Top Contributors of Region</h3>
-    <div class="grid-container">
-      <div class="column-name">Email</div>
-      <div class="column-name">Checklists</div>
-      <div class="column-name">Sightings</div>
-      <div class="column-name">Species Seen</div>
-      <div class="column-name">Birds Seen</div>
-      <div v-for='contributor in top_contributors' :key='contributor[0]' class="grid-row">
-        <div class="grid-item">{{contributor[0]}}</div>
-        <div class="grid-item">{{contributor[1]}}</div>
-        <div class="grid-item">{{contributor[2]}}</div>
-        <div class="grid-item">{{contributor[4]}}</div>
-        <div class="grid-item">{{contributor[3]}}</div>
+      <h3 class="title">Top Contributors of Region</h3>
+      <div class="grid-container">
+        <div class="column-name">Email</div>
+        <div class="column-name">Checklists</div>
+        <div class="column-name">Sightings</div>
+        <div class="column-name">Species Seen</div>
+        <div class="column-name">Birds Seen</div>
+        <div v-for='contributor in top_contributors' :key='contributor[0]' class="grid-row">
+          <div class="grid-item">{{contributor[0]}}</div>
+          <div class="grid-item">{{contributor[1]}}</div>
+          <div class="grid-item">{{contributor[2]}}</div>
+          <div class="grid-item">{{contributor[4]}}</div>
+          <div class="grid-item">{{contributor[3]}}</div>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Checklists Across Region</div>
+        <div class="stat-value">{{ checklists.length }}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-title">Total Number of Sightings</div>
+        <div class="stat-value">{{ sightings.length }}</div>
       </div>
     </div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-title">Checklists Across Region</div>
-    <div class="stat-value">{{ checklists.length }}</div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-title">Total Number of Sightings</div>
-    <div class="stat-value">{{ sightings.length }}</div>
-  </div>
   </div>
 </div>
 
