@@ -82,11 +82,11 @@
   <div class="left-section">
     <h1 class="title"><i class="fas fa-search-location"></i> Region Information</h1>
     <div v-if="loaded">
-      <h3 class="subtitle is-3 has-text-white ">Get Species Sighting Info</h3>
       <div class="field">
         <div class="control">
           <div class="select is-fullwidth is-info">
             <select v-model="selectedSpecies" @change="setSpecies">
+              <option value="" disabled selected>Select a species to view statistics</option>
               <option v-for="sighting in unique_sightings" :key="sighting.id" :value="sighting">
                 {{ sighting.name }}
               </option>
