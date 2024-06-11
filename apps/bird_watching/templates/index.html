@@ -14,6 +14,10 @@
     height: 100vh; 
 }
 
+html {
+    background-color: #1d1a1a; /* black background */
+  }
+
 .scrollable-container {
     max-height: 340px;
     overflow-y: auto;
@@ -145,7 +149,19 @@
 
 .input::placeholder {
     color: black; /* Make the placeholder text black */
+
+
 }
+
+  /* Target the footer by class */
+  .footer {
+      background-color: #1d1a1a;
+  }
+
+  /* Target the footer by ID */
+  #footer {
+    background-color: #1d1a1a;
+  }
 </style>
 
 <div class="section" id="app" v-cloak>
