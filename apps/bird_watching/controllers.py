@@ -187,11 +187,10 @@ def location():
     lng1 = request.query.get('lng1')
     lng2 = request.query.get('lng2')
     return dict(
-        # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
         get_region_information_url = URL('get_region_information'),
         lat1 = lat1,
-        lat2= lat2,
+        lat2 = lat2,
         lng1 = lng1,
         lng2 = lng2
     )
@@ -201,21 +200,36 @@ def location():
 @action('get_region_information', method='GET')
 @action.uses(db, auth.user)
 def get_region_information():
-    #queries checklist table by latitude and longitude coordinates provided from index page
     lat1 = request.query.get('lat1')
     lat2 = request.query.get('lat2')
     lng1 = request.query.get('lng1')
     lng2 = request.query.get('lng2')
+
+    try:
+        lat1 = float(lat1)
+        lat2 = float(lat2)
+        lng1 = float(lng1)
+        lng2 = float(lng2)
+    except (TypeError, ValueError):
+        return dict(checklists=[], sightings=[], unique_sightings=[], top_contributors=[])
+
     print(lat1, lat2, lng1, lng2)
+
     checklists = []
-    if(lat1 and lat2 and lng1 and lng2):
+    if lat1 and lat2 and lng1 and lng2:
         minLat = min(lat1, lat2)
         maxLat = max(lat1, lat2)
         minLng = min(lng1, lng2)
-        maxLng = min(lng1, lng2)
-        checklists = db(db.checklist.latitude.cast('float') >= minLat and db.checklist.latitude.cast('float') <= maxLat and db.checklist.longitude.cast('float') >= minLng and db.checklist.longitude.cast('float') <= maxLng).select()
-    if(not checklists):
-        checklists = db(db.checklist).select(orderby=db.checklist.id, limitby=(0, 100))
+        maxLng = max(lng1, lng2)
+        checklists = db(
+            (db.checklist.latitude.cast('float') >= minLat) & 
+            (db.checklist.latitude.cast('float') <= maxLat) & 
+            (db.checklist.longitude.cast('float') >= minLng) & 
+            (db.checklist.longitude.cast('float') <= maxLng)
+        ).select()
+        
+    if not checklists:
+        checklists = db(db.checklist).select(orderby=db.checklist.id, limitby=(0, 0))
 
     checklists_with_sightings = []
     sightings_list = []
@@ -277,7 +291,12 @@ def get_region_information():
         top_contribs = top_contribs[0:9]
     #top_contribs = json.dumps([[key] + value for key, value in top_contributors.items()])
     #top_contribs = sorted(top_contribs, key=lambda x:[1], reverse=True)
-    return dict(checklists = checklists_with_sightings, sightings = sightings_list, unique_sightings = unique_sightings_sorted, top_contributors = top_contribs)
+    return dict(
+        checklists=checklists_with_sightings,
+        sightings=sightings_list,
+        unique_sightings=unique_sightings_sorted,
+        top_contributors=top_contribs
+    )
     
 
 @action('my_callback')
